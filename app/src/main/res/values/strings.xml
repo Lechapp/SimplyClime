@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name" translatable="false">SimplyClime</string>
+    <string name="logo" translatable="false">Logo</string>
+    <string name="gps" translatable="false">GPS Icon</string>
+    <string name="zero" translatable="false">0</string>
+    <string name="selectcity">Select a city or weather station of another user</string>
+    <string name="station">Add your own weather station</string>
+    <string name="addcity">Add location</string>
+    <string name="addstation">Add weather station</string>
+    <string name="login">Welcome in SimplyClime!</string>
+    <string name="username">Username or e-mail</string>
+    <string name="password">Password</string>
+    <string name="log_in">Log In</string>
+    <string name="or">or</string>
+    <string name="register">Register</string>
+    <string name="emptylogin">Enter username and password</string>
+    <string name="error">Unexcepted error, please try again</string>
+    <string name="regusername">Username</string>
+    <string name="email">E-mail adress</string>
+    <string name="createacc">Create account</string>
+    <string name="search">Search for the city</string>
+    <string name="searchempty">Enter the name of the city</string>
+    <string name="stationname">Station name</string>
+    <string name="country">Country</string>
+    <string name="city">City</string>
+    <string name="street">Street</string>
+    <string name="numberstation">"Weather stations: "</string>
+    <string name="emptysearch">No weather stations in this city</string>
+    <string name="flag">Flag</string>
+    <string name="downarrow">Down arrow</string>
+    <string name="logged">Tap to log out</string>
+    <string name="notlogg">Tap to log in</string>
+    <string name="alreadyadd">This location is already added</string>
+</resources>

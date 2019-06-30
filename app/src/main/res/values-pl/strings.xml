@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="addcity">Dodaj lokalizacje</string>
+    <string name="addstation">Dodaj stację pogodową</string>
+    <string name="city">Miasto</string>
+    <string name="station">Dodaj własną stację pogodową</string>
+    <string name="login">Witaj w SimplyClime</string>
+    <string name="password">Hasło</string>
+    <string name="username">Nazwa użytkownika lub e-mail</string>
+    <string name="register">Zarejestruj się</string>
+    <string name="log_in">Zaloguj</string>
+    <string name="or">lub</string>
+    <string name="emptylogin">Wpisz nazwię użytkownika i hasło</string>
+    <string name="error">Wysąpił błąd, spróbuj ponownie</string>
+    <string name="regusername">Nazwa użytkownika</string>
+    <string name="email">Adres e-mail</string>
+    <string name="createacc">Stwórz konto</string>
+    <string name="search">Wyszukaj miasto</string>
+    <string name="searchempty">Wpisz nazwę miasta</string>
+    <string name="stationname">Nazwa stacji</string>
+    <string name="country">Państwo</string>
+    <string name="street">Ulica</string>
+    <string name="selectcity">Wybierz miasto lub stację pogodową innego użytkownika</string>
+    <string name="numberstation">"Stacji pogodowych: "</string>
+    <string name="emptysearch">Brak stacji pogodowych w tym mieście</string>
+    <string name="flag">Flaga</string>
+    <string name="downarrow">Strzałka w dół</string>
+    <string name="logged">Stuknij aby się wylogować</string>
+    <string name="notlogg">Stuknij aby się zalogować</string>
+    <string name="alreadyadd">Ta lokalizacja jest już dodana</string>
+</resources>

@@ -28,4 +28,15 @@
     <string name="logged">Stuknij aby się wylogować</string>
     <string name="notlogg">Stuknij aby się zalogować</string>
     <string name="alreadyadd">Ta lokalizacja jest już dodana</string>
+    <string name="buldingnumber">Numer budynku</string>
+    <string name="windunit">Jednostka pomiaru prędkości wiatru</string>
+    <string name="tempunit">Jednostka pomiaru temperatury</string>
+    <string name="createstation">Stwórz nową stację pogodową</string>
+    <string name="requiered">To pole jest wymagane</string>
+    <string name="min4sign">Nazwa użytkownika powinna zawierać co najmniej 4 znaki</string>
+    <string name="correctemail">Wprowadź poprawny adres e mail</string>
+    <string name="passequalsuser">Nazwa użytkownika powinna być inna niz hasło</string>
+    <string name="minsignpassword">Hasło powinno zawiertać conajmniej 5 znaków</string>
+    <string name="mailexist">"Podany adres e-mail jest już w użyciu "</string>
+    <string name="usernameexist">Nazwa użytkownika jest już zajeta</string>
 </resources>

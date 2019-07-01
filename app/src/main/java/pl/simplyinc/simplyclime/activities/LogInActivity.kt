@@ -54,7 +54,6 @@ class LogInActivity : AppCompatActivity() {
         val request = object: StringRequest(Method.POST, url, Response.Listener{ res ->
                 val response = JSONObject(res)
 
-            Log.d("passtest", res)
             if(!response.getBoolean("error")){
 
                     val intentt:Intent = when(intent.getBooleanExtra("fromadd", false)){
@@ -63,12 +62,15 @@ class LogInActivity : AppCompatActivity() {
                     }
 
                     session.setPref("login", response.getString("login"))
+                    session.setPref("id", response.getString("id"))
                     session.setPref("token", response.getString("token"))
                     val sb = StringBuilder()
-                    val weatherstations = response.getJSONArray("weatherstations")
+                    val weatherstations = response.getJSONObject("weatherstations")
+                    val ids = weatherstations.getJSONArray("ids")
+                    val names = weatherstations.getJSONArray("names")
 
-                    for(i in 0 until weatherstations.length()) {
-                        sb.append(weatherstations[i]).append(",")
+                    for(i in 0 until ids.length()) {
+                        sb.append(names.getString(i)).append("/").append(ids.getString(i)).append(",")
                     }
                     session.setPref("mystations", sb.toString())
                     startActivity(intentt)

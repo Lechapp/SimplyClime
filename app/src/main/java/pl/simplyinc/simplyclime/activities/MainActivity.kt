@@ -15,12 +15,12 @@ import android.support.v4.view.ViewPager.OnPageChangeListener
 import pl.simplyinc.simplyclime.adapters.StationNameAdapter
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
+import com.android.volley.toolbox.StringRequest
+import kotlinx.android.synthetic.main.activity_register.*
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
 
-
-val openWeatherKeyAPI = "45dc4902d2e0ef0659fc3e32b9195973"
 val server = "192.168.1.8/weatherapp"
 
 class MainActivity : AppCompatActivity() {
@@ -28,26 +28,24 @@ class MainActivity : AppCompatActivity() {
     lateinit var pagerAdapter: PagerAdapter
     lateinit var session:SessionPref
     lateinit var adaptername:StationNameAdapter
-    private val title = arrayListOf<String>()
+    private lateinit var title:ArrayList<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         session = SessionPref(this)
-        adaptername = StationNameAdapter(title,this, weathers)
         setTitleBar()
+        pagerAdapter = PagerAdapter(supportFragmentManager, this)
+        weathers.adapter = pagerAdapter
 
         if(session.getPref("login") != "") {
+            tokenCheck()
             loginname.text = session.getPref("login")
             loginname.visibility = View.VISIBLE
             checklogin.text = getString(R.string.logged)
 
             checklogin.setOnClickListener {
-                session.setPref("token","")
-                session.setPref("login","")
-                session.setPref("mystations","")
-                val intent = Intent(applicationContext, MainActivity::class.java)
-                startActivity(intent)
+                logOut()
             }
         }else{
             loginname.visibility = View.GONE
@@ -57,9 +55,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
-        pagerAdapter = PagerAdapter(supportFragmentManager, this)
-        weathers.adapter = pagerAdapter
         weathers.addOnPageChangeListener(object : OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
@@ -69,29 +64,13 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-/*
-        //przyklad openweather
-        //        var encoded = URLEncoder.encode("Kołobrzeg dzikiąęł", "UTF-8")
-        //https://api.openweathermap.org/data/2.5/weather?q=London&appid=$openWeatherKeyAPI
-
-        val url = "http://$server/weatherapp/api/weather/1?newest=true"
-        val params = JSONObject()
-        params.put("newest", true)
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.GET, url, null,
-            Response.Listener { response ->
-                Log.d("testt","Response: %s".format(response.toString()))
-            },
-            Response.ErrorListener { error ->
-                Log.d("testt", error.toString())
-            }
-        )
-        VolleySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest)
-        */
     }
 
     private fun setTitleBar(){
+        title = arrayListOf()
         val cities = session.getPref("cities").split(",")
         val streets = session.getPref("stations").split(",")
+        val stations = session.getPref("mystations").split(",")
 
         for(i in 0 until cities.size-1){
             val city = cities[i].split("/")
@@ -105,13 +84,61 @@ class MainActivity : AppCompatActivity() {
                 title.add(street[0] + " " + street[1])
             }catch (exception:Exception){}
         }
+
+        for(i in 0 until stations.size-1){
+            val station = stations[i].split("/")
+            try{
+                title.add(station[0])
+            }catch (exception:Exception){}
+        }
+
         title.add(getString(R.string.addcity))
 
+        adaptername = StationNameAdapter(title,this, weathers)
         namerecycler.adapter = adaptername
-        adaptername.notifyDataSetChanged()
         namerecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
     }
 
+    private fun tokenCheck(){
+        val url = "http://$server/api/user/login"
+        val request = object: StringRequest(Method.POST, url, Response.Listener{ res ->
+                val response = JSONObject(res)
+                if(!response.getBoolean("error")){
+                    if(!response.getBoolean("tokenCheck")){
+                        logOut()
+                    }
+                }
+            },
+            Response.ErrorListener {
+
+            }) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                    params["token"] = session.getPref("token")
+                    params["id"] = session.getPref("id")
+                return params
+            }
+        }
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
+
+    private fun logOut(){
+        session.setPref("token","")
+        session.setPref("login","")
+        session.setPref("id","")
+        session.setPref("mystations","")
+        loginname.visibility = View.GONE
+        checklogin.text = getString(R.string.notlogg)
+
+        checklogin.setOnClickListener {
+            val intent = Intent(applicationContext, LogInActivity::class.java)
+            startActivity(intent)
+        }
+
+        pagerAdapter.changeData()
+        setTitleBar()
+    }
 
 }

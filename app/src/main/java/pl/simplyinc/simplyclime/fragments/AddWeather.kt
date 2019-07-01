@@ -33,7 +33,7 @@ class AddWeather : Fragment() {
 
         addstation.setOnClickListener {
             val addstation:Intent
-            if(sessionPref.getPref("token") == "0") {
+            if(sessionPref.getPref("token") == "") {
                 addstation = Intent(context, LogInActivity::class.java)
                 addstation.putExtra("fromadd",true)
             }else{

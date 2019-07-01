@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +13,6 @@ import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.MainActivity
 import pl.simplyinc.simplyclime.elements.SessionPref
-import java.lang.StringBuilder
 
 
 class SearchWeatherAdapter(val cities: MutableList<String>, val countries: MutableList<String>, val stations: MutableList<String>,val context:Context, val liststations:JSONObject): RecyclerView.Adapter<VH>() {

@@ -16,7 +16,7 @@
     <string name="emptylogin">Enter username and password</string>
     <string name="error">Unexcepted error, please try again</string>
     <string name="regusername">Username</string>
-    <string name="email">E-mail adress</string>
+    <string name="email">E-mail</string>
     <string name="createacc">Create account</string>
     <string name="search">Search for the city</string>
     <string name="searchempty">Enter the name of the city</string>
@@ -31,4 +31,21 @@
     <string name="logged">Tap to log out</string>
     <string name="notlogg">Tap to log in</string>
     <string name="alreadyadd">This location is already added</string>
+    <string name="buldingnumber">Building number</string>
+    <string translatable="false" name="kmh">km/h</string>
+    <string translatable="false" name="mph">mph</string>
+    <string translatable="false" name="ms">m/s</string>
+    <string translatable="false" name="Celsjusz">&#176;C</string>
+    <string translatable="false" name="Kelvin">K</string>
+    <string translatable="false" name="Fahrenheit">&#176;F</string>
+    <string name="windunit">Wind speed measurement unit</string>
+    <string name="tempunit">Temperature measurement unit</string>
+    <string name="createstation">Create a new weather station</string>
+    <string name="requiered">This field is required</string>
+    <string name="min4sign">The username should contain at least 4 characters</string>
+    <string name="minsignpassword">The password should contain at least 5 characters</string>
+    <string name="correctemail">Enter the correct e-mail address</string>
+    <string name="passequalsuser">The username should be different than the password</string>
+    <string name="usernameexist">The username is already taken</string>
+    <string name="mailexist">The email address provided is already in use</string>
 </resources>

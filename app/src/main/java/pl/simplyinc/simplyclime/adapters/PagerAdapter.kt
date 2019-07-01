@@ -11,17 +11,25 @@ import pl.simplyinc.simplyclime.fragments.weatherinfo
 class PagerAdapter(fm:FragmentManager, val context:Context) :FragmentStatePagerAdapter(fm) {
     //stations mystations cities
     val session = SessionPref(context)
-    val cities = session.getPref("cities").split(",")
-    val streets = session.getPref("stations").split(",")
+    var cities = session.getPref("cities").split(",")
+    var streets = session.getPref("stations").split(",")
+    var stations = session.getPref("mystations").split(",")
 
     override fun getItem(position: Int): Fragment {
         return when(position){
-            in 0 until (cities.size+streets.size-2) -> weatherinfo()
+            in 0 until (cities.size+streets.size+stations.size-3) -> weatherinfo()
             else -> AddWeather()
         }
     }
 
     override fun getCount(): Int {
-    return (cities.size+streets.size-2) + 1
+    return (cities.size+streets.size+stations.size-3) + 1
+    }
+
+    fun changeData(){
+        cities = session.getPref("cities").split(",")
+        streets = session.getPref("stations").split(",")
+        stations = session.getPref("mystations").split(",")
+        notifyDataSetChanged()
     }
 }

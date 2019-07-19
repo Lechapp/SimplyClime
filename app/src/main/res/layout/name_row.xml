@@ -8,10 +8,12 @@
     <TextView
             android:text="@string/stationname"
             android:layout_width="wrap_content"
+            android:textColor="@color/white"
+            android:padding="1dp"
             android:layout_height="wrap_content" android:id="@+id/name" app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp" android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent" android:textSize="13sp"/>
     <View
             android:id="@+id/bottomline"
             android:layout_width="0dp"

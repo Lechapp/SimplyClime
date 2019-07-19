@@ -6,30 +6,26 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentStatePagerAdapter
 import pl.simplyinc.simplyclime.elements.SessionPref
 import pl.simplyinc.simplyclime.fragments.AddWeather
-import pl.simplyinc.simplyclime.fragments.weatherinfo
+import pl.simplyinc.simplyclime.fragments.Weatherinfo
 
 class PagerAdapter(fm:FragmentManager, val context:Context) :FragmentStatePagerAdapter(fm) {
     //stations mystations cities
     val session = SessionPref(context)
-    var cities = session.getPref("cities").split(",")
-    var streets = session.getPref("stations").split(",")
-    var stations = session.getPref("mystations").split(",")
+    var stations = session.getPref("stations").split("|")
 
     override fun getItem(position: Int): Fragment {
         return when(position){
-            in 0 until (cities.size+streets.size+stations.size-3) -> weatherinfo()
+            in 0 until (stations.size-1) -> Weatherinfo.newInstance(position)
             else -> AddWeather()
         }
     }
 
     override fun getCount(): Int {
-    return (cities.size+streets.size+stations.size-3) + 1
+    return (stations.size - 1) + 1
     }
 
     fun changeData(){
-        cities = session.getPref("cities").split(",")
-        streets = session.getPref("stations").split(",")
-        stations = session.getPref("mystations").split(",")
+        stations = session.getPref("stations").split("|")
         notifyDataSetChanged()
     }
 }

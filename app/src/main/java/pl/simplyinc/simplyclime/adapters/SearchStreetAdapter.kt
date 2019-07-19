@@ -6,29 +6,31 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.MainActivity
 import pl.simplyinc.simplyclime.elements.SessionPref
-import javax.sql.StatementEvent
+import pl.simplyinc.simplyclime.elements.StationsData
+import pl.simplyinc.simplyclime.elements.WeatherData
 
 
-class SearchStreetAdapter(val context:Context, val liststations:JSONArray, val city:String): RecyclerView.Adapter<ViewH>() {
+class SearchStreetAdapter(val context:Context, val liststations:JSONArray, val city:String): RecyclerView.Adapter<ViewHolder>() {
 
     private val session = SessionPref(context)
 
-    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ViewH {
+    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(context)
-        return ViewH(layoutInflater.inflate(R.layout.street_row, parent, false))
+        return ViewHolder(layoutInflater.inflate(R.layout.street_row, parent, false))
     }
 
     override fun getItemCount(): Int {
         return liststations.length()
     }
 
-    override fun onBindViewHolder(holder: ViewH, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val street = holder.itemView.street
         val bulding = holder.itemView.buldingnumber
 
@@ -37,18 +39,26 @@ class SearchStreetAdapter(val context:Context, val liststations:JSONArray, val c
         bulding.text = dataArray.getString(2)
         street.setOnClickListener {
             val activestations = session.getPref("stations")
-            val selectedstreet = city + "/" + dataArray.getString(1)+ "/" +dataArray.getString(0) + ","
-            if(activestations.indexOf(selectedstreet) != -1){
+            val activeweathers = session.getPref("weathers")
+
+            val json = Json(JsonConfiguration.Stable)
+
+            val station = StationsData("station", city, dataArray.getInt(3),dataArray.getString(0),city + " " + dataArray.getString(1))
+            val selectedcity = json.stringify(StationsData.serializer(), station) + "|"
+
+            val weather = WeatherData()
+            val addweather = json.stringify(WeatherData.serializer(), weather) + "|"
+
+            if(activestations.indexOf("\"searchvalue\":\""+dataArray.getString(0)+"\"") != -1){
                 Toast.makeText(context, context.getString(R.string.alreadyadd), Toast.LENGTH_SHORT).show()
             }else {
-                session.setPref("stations", activestations + selectedstreet)
+                session.setPref("stations", activestations + selectedcity)
+                session.setPref("weathers", activeweathers + addweather)
                 val intent = Intent(context, MainActivity::class.java)
-                intent.putExtra("stations", true)
+                intent.putExtra("station", true)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
             }
         }
         }
     }
-
-class ViewH(view: View):RecyclerView.ViewHolder(view)

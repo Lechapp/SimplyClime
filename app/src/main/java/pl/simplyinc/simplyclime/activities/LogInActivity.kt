@@ -8,7 +8,7 @@ import android.view.View
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import kotlinx.android.synthetic.main.activity_log_in.*
-import kotlinx.android.synthetic.main.fragment_add_weather.*
+import kotlinx.serialization.json.Json
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.elements.SessionPref
@@ -16,6 +16,10 @@ import pl.simplyinc.simplyclime.network.VolleySingleton
 import java.lang.StringBuilder
 import java.math.BigInteger
 import java.security.MessageDigest
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonConfiguration
+import pl.simplyinc.simplyclime.elements.StationsData
+import pl.simplyinc.simplyclime.elements.WeatherData
 
 class LogInActivity : AppCompatActivity() {
 
@@ -64,15 +68,32 @@ class LogInActivity : AppCompatActivity() {
                     session.setPref("login", response.getString("login"))
                     session.setPref("id", response.getString("id"))
                     session.setPref("token", response.getString("token"))
-                    val sb = StringBuilder()
+                    val st = StringBuilder()
+                    val wh = StringBuilder()
+                    val json = Json(JsonConfiguration.Stable)
+
                     val weatherstations = response.getJSONObject("weatherstations")
                     val ids = weatherstations.getJSONArray("ids")
                     val names = weatherstations.getJSONArray("names")
+                    val cities = weatherstations.getJSONArray("cities")
+                    val timezone = weatherstations.getJSONArray("timezone")
+
 
                     for(i in 0 until ids.length()) {
-                        sb.append(names.getString(i)).append("/").append(ids.getString(i)).append(",")
+                        val station = StationsData("mystation", cities.getString(i), timezone.getInt(i), ids.getString(i), names.getString(i))
+                        st.append(json.stringify(StationsData.serializer(), station)).append("|")
+
+                        val weather = WeatherData()
+                        wh.append(json.stringify(WeatherData.serializer(), weather)).append("|")
                     }
-                    session.setPref("mystations", sb.toString())
+
+                    val activestation = session.getPref("stations")
+                    val activeweather = session.getPref("weathers")
+
+
+                    session.setPref("stations",activestation+st)
+                    session.setPref("weathers",activeweather+wh)
+
                     startActivity(intentt)
                     finish()
                 }else{

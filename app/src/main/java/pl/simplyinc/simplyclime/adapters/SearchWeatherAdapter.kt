@@ -9,26 +9,31 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import kotlinx.android.synthetic.main.search_row.view.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.MainActivity
 import pl.simplyinc.simplyclime.elements.SessionPref
+import pl.simplyinc.simplyclime.elements.StationsData
+import pl.simplyinc.simplyclime.elements.WeatherData
 
 
-class SearchWeatherAdapter(val cities: MutableList<String>, val countries: MutableList<String>, val stations: MutableList<String>,val context:Context, val liststations:JSONObject): RecyclerView.Adapter<VH>() {
+class SearchWeatherAdapter(val cities: MutableList<String>, val countries: MutableList<String>, val stations: MutableList<String>,
+                           val timezone:MutableList<Int>, val context:Context, val liststations:JSONObject): RecyclerView.Adapter<ViewHolder>() {
 
     private val session = SessionPref(context)
 
-    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): VH {
+    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(context)
-        return VH(layoutInflater.inflate(R.layout.search_row, parent, false))
+        return ViewHolder(layoutInflater.inflate(R.layout.search_row, parent, false))
     }
 
     override fun getItemCount(): Int {
         return if (cities.size == 0) 1 else cities.size
     }
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val city = holder.itemView.city
         val country = holder.itemView.country
         val numberstation = holder.itemView.numberstation
@@ -57,14 +62,25 @@ class SearchWeatherAdapter(val cities: MutableList<String>, val countries: Mutab
             var arrowchange = true
 
             city.setOnClickListener {
-                val activecities = session.getPref("cities")
-                val selectedcity =  countries[position] + "/" + cities[position] + ","
-                if(activecities.indexOf(selectedcity) != -1) {
+                val activecities = session.getPref("stations")
+                val activeweather = session.getPref("weathers")
+                val json = Json(JsonConfiguration.Stable)
+
+                val station = StationsData("city", cities[position],timezone[position],
+                    countries[position] + "/" + cities[position], cities[position])
+
+                val selectedcity = json.stringify(StationsData.serializer(), station) + "|"
+
+                val weather = WeatherData()
+                val addweather = json.stringify(WeatherData.serializer(), weather) + "|"
+
+                if(activecities.indexOf("\"searchvalue\":\""+countries[position] + "/" + cities[position]+"\"") != -1) {
                     Toast.makeText(context, context.getString(R.string.alreadyadd), Toast.LENGTH_SHORT).show()
                 }else {
-                    session.setPref("cities", activecities + selectedcity)
+                    session.setPref("stations", activecities + selectedcity)
+                    session.setPref("weathers", activeweather + addweather)
                     val intent = Intent(context, MainActivity::class.java)
-                    intent.putExtra("cities", true)
+                    intent.putExtra("station", true)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 }
@@ -88,4 +104,3 @@ class SearchWeatherAdapter(val cities: MutableList<String>, val countries: Mutab
         }
     }
 }
-class VH(view: View):RecyclerView.ViewHolder(view)

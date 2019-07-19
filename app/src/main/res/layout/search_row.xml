@@ -61,7 +61,7 @@
             app:layout_constraintTop_toTopOf="@+id/country"/>
     <ImageView
             android:layout_width="24dp"
-            android:layout_height="16.5dp" app:srcCompat="@drawable/cloud"
+            android:layout_height="16.5dp" app:srcCompat="@drawable/cloud_b"
             android:id="@+id/flag"
             android:contentDescription="@string/flag"
             app:layout_constraintBottom_toTopOf="@+id/searchtext"

@@ -3,20 +3,21 @@ package pl.simplyinc.simplyclime.activities
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.RadioButton
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import kotlinx.android.synthetic.main.activity_add_station.*
-import kotlinx.android.synthetic.main.activity_log_in.*
-import kotlinx.android.synthetic.main.street_row.*
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.elements.SessionPref
 import pl.simplyinc.simplyclime.network.VolleySingleton
 import android.location.Geocoder
 import android.view.View
 import android.widget.Toast
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import pl.simplyinc.simplyclime.R
+import pl.simplyinc.simplyclime.elements.StationsData
+import pl.simplyinc.simplyclime.elements.WeatherData
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.HashMap
@@ -90,12 +91,23 @@ class AddStationActivity : AppCompatActivity() {
                 val response = JSONObject(res)
 
                 if(!response.getBoolean("error")){
-                    val station = response.getString("name")+"/"+response.getString("stationID")+","
-                    val activestation = session.getPref("mystations")
-                    session.setPref("mystations",activestation+station)
+                    val json = Json(JsonConfiguration.Stable)
+
+                    val station = StationsData("mystation", city, response.getInt("timezone"),
+                        response.getString("stationID"),response.getString("name"))
+                    val addedstation = json.stringify(StationsData.serializer(), station) + "|"
+
+                    val weather = WeatherData()
+                    val addedweather = json.stringify(WeatherData.serializer(), weather) + "|"
+
+                    val activestation = session.getPref("stations")
+                    val activeweather = session.getPref("weathers")
+
+                    session.setPref("stations",activestation+addedstation)
+                    session.setPref("weather",activeweather+addedweather)
 
                     val intent = Intent(applicationContext, MainActivity::class.java)
-                    intent.putExtra("mystations", true)
+                    intent.putExtra("station", true)
                     startActivity(intent)
                 }else{
                     Toast.makeText(this,response.getString("message"), Toast.LENGTH_SHORT).show()

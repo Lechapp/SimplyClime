@@ -6,6 +6,9 @@
              tools:context=".fragments.AddWeather">
     <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
+            android:paddingTop="30dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
             android:layout_height="match_parent">
 
         <TextView

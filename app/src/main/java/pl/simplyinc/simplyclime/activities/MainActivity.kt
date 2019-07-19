@@ -1,22 +1,19 @@
 package pl.simplyinc.simplyclime.activities
+
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import com.android.volley.Request
 import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.adapters.PagerAdapter
 import pl.simplyinc.simplyclime.network.VolleySingleton
-import java.net.URLEncoder
 import android.support.v4.view.ViewPager.OnPageChangeListener
 import pl.simplyinc.simplyclime.adapters.StationNameAdapter
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
+import android.view.Window
 import com.android.volley.toolbox.StringRequest
-import kotlinx.android.synthetic.main.activity_register.*
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
@@ -33,10 +30,21 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        supportActionBar?.hide()
         session = SessionPref(this)
         setTitleBar()
         pagerAdapter = PagerAdapter(supportFragmentManager, this)
         weathers.adapter = pagerAdapter
+
+        if(intent.getBooleanExtra("station", false)){
+            adaptername.setActive(title.size-2)
+            weathers.setCurrentItem(title.size-2,true)
+        }
+        val widgetposition = intent.getIntExtra("fromwidget", -1)
+        if(widgetposition != -1){
+            adaptername.setActive(widgetposition)
+            weathers.setCurrentItem(widgetposition,true)
+        }
 
         if(session.getPref("login") != "") {
             tokenCheck()
@@ -68,27 +76,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun setTitleBar(){
         title = arrayListOf()
-        val cities = session.getPref("cities").split(",")
-        val streets = session.getPref("stations").split(",")
-        val stations = session.getPref("mystations").split(",")
-
-        for(i in 0 until cities.size-1){
-            val city = cities[i].split("/")
-            try{
-                title.add(city[1])
-            }catch (exception:Exception){}
-        }
-        for(i in 0 until streets.size-1){
-            val street = streets[i].split("/")
-            try{
-                title.add(street[0] + " " + street[1])
-            }catch (exception:Exception){}
-        }
+        val stations = session.getPref("stations").split("|")
 
         for(i in 0 until stations.size-1){
-            val station = stations[i].split("/")
+            val station = JSONObject(stations[i])
             try{
-                title.add(station[0])
+                title.add(station.getString("title"))
             }catch (exception:Exception){}
         }
 
@@ -128,7 +121,16 @@ class MainActivity : AppCompatActivity() {
         session.setPref("token","")
         session.setPref("login","")
         session.setPref("id","")
-        session.setPref("mystations","")
+        val stations = session.getPref("stations").split("|")
+
+        var activestation = ""
+        for(i in 0 until stations.size-1) {
+            val station = JSONObject(stations[i])
+            if (station.getString("type") != "mystation")
+                activestation += (stations[i] + "|")
+        }
+        session.setPref("stations", activestation)
+
         loginname.visibility = View.GONE
         checklogin.text = getString(R.string.notlogg)
 

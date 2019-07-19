@@ -28,6 +28,7 @@ class SearchWeatherActivity : AppCompatActivity() {
     private var cities = mutableListOf<String>()
     private var countries = mutableListOf<String>()
     private var numberstation = mutableListOf<String>()
+    private var timezone = mutableListOf<Int>()
     private var countcallback = 0
     private var countcallfun = 0
 
@@ -95,6 +96,7 @@ class SearchWeatherActivity : AppCompatActivity() {
                 cities = mutableListOf()
                 countries = mutableListOf()
                 numberstation = mutableListOf()
+                timezone = mutableListOf()
 
                 if(!response.getBoolean("error")){
 
@@ -106,9 +108,10 @@ class SearchWeatherActivity : AppCompatActivity() {
                         countries.add(arr.getString(0))
                         cities.add(arr.getString(1))
                         numberstation.add(arr.getString(2))
+                        timezone.add(arr.getInt(3))
                     }
 
-                    adaptersearch = SearchWeatherAdapter(cities, countries, numberstation, applicationContext, liststations)
+                    adaptersearch = SearchWeatherAdapter(cities, countries, numberstation, timezone, applicationContext, liststations)
                     searchrecycler.adapter = adaptersearch
 
                 }else {

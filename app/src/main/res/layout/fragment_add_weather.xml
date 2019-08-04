@@ -7,6 +7,7 @@
     <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:paddingTop="30dp"
+            android:background="@drawable/wallpaper"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
             android:layout_height="match_parent">
@@ -15,6 +16,8 @@
                 android:text="@string/selectcity"
                 android:layout_width="wrap_content"
                 android:gravity="center"
+                android:textColor="@color/white"
+                android:background="@color/blackalpha"
                 android:layout_height="wrap_content" android:id="@+id/textView2" android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="30dp"
@@ -32,6 +35,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView3"
+                android:textColor="@color/white"
+                android:background="@color/blackalpha"
                 app:layout_constraintTop_toBottomOf="@+id/addcity"
                 app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="50dp" android:textSize="20sp"/>

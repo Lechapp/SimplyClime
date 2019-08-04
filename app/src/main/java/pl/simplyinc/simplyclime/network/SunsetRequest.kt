@@ -5,10 +5,12 @@ import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import org.json.JSONObject
+import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.elements.CircularProgressBar
 import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
@@ -40,7 +42,7 @@ class SunsetRequest {
 
             },
             Response.ErrorListener {
-
+                Toast.makeText(context, context.getString(R.string.checkconnection), Toast.LENGTH_SHORT).show()
             })
 
         VolleySingleton.getInstance(context).addToRequestQueue(request)

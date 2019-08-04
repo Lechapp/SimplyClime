@@ -59,6 +59,8 @@ class NewestWeather : AppWidgetProvider() {
             val session = SessionPref(context)
             val widgetweather = session.getPref("weathers").split("|")[weatherposition]
             val station = session.getPref("stations").split("|")[weatherposition]
+            val forecast = session.getPref("forecasts").split("|")[weatherposition]
+            val f = JSONObject(forecast)
             val widgetinfo = JSONObject(session.getPref("widget$appWidgetId"))
             val weatherdata = JSONObject(widgetweather)
             val stationdata = JSONObject(station)
@@ -75,10 +77,9 @@ class NewestWeather : AppWidgetProvider() {
 
 
             if(stationdata.getInt("refreshtime")+weatherdata.getInt("updatedtime") <= unixTime){
-
-                update.getNewestWeatherWidget(context, appWidgetManager, appWidgetId, widgetweather, stationdata, widgetinfo)
+                update.getNewestWeatherWidget(context, appWidgetManager, appWidgetId, widgetweather, stationdata, widgetinfo,f)
             }else{
-                update.setWidget(context, appWidgetManager, appWidgetId, widgetweather, stationdata, widgetinfo, false)
+                update.setWidget(context, appWidgetManager, appWidgetId, widgetweather, stationdata, widgetinfo, f, false)
             }
 
         }

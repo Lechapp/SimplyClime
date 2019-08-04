@@ -1,13 +1,16 @@
 package pl.simplyinc.simplyclime.elements
 
+import android.util.Log
 import pl.simplyinc.simplyclime.R
 import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.roundToInt
 
 class WeatherTools {
 
 
-    fun weathericon(tempout:String, rainfall:String, insolation:String, sunrise:Int, sunset:Int, weathertime:Int, black:Boolean):Int{
+    fun weathericon(tempout:String, rainfall:String, insolation:String, sunrise:Int, sunset:Int, timezone:Int, black:Boolean):Int{
 
         var weathericon = 0
         var rain = -1
@@ -25,54 +28,103 @@ class WeatherTools {
             insol = insolation.toInt()
         }catch (e: Exception){}
 
+        val systemtime = System.currentTimeMillis()/1000L
+        val systemtimezone = (TimeZone.getDefault().rawOffset + TimeZone.getDefault().dstSavings)/1000L
+        val weathertimetoday = systemtime - systemtimezone + timezone
 
         if(insol != -1) {
 
             if(rain > 10){
-                if(weathertime in sunrise..sunset || sunset == 0) {
 
-                    if(insol > 30){
+                if(rain > 65){
 
-                        if (temp != -1 && temp < 273){
-                            weathericon = when(black){
-                                true->R.drawable.cloud_sun_snow_w
-                                false->R.drawable.cloud_sun_snow_b
+                    if (weathertimetoday in sunrise..sunset || sunset == 0) {
+
+                        if (insol > 30) {
+
+                            if (temp != -1 && temp < 273) {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_sun_snow_w
+                                    false -> R.drawable.cloud_sun_snow_b
+                                }
+                            } else {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_sun_rain_w
+                                    false -> R.drawable.cloud_sun_rain_b
+                                }
                             }
-                        }else{
-                            weathericon = when(black){
-                                true->R.drawable.cloud_sun_rain_w
-                                false->R.drawable.cloud_sun_rain_b
+                        } else {
+                            if (temp != -1 && temp < 273) {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_snow_w
+                                    false -> R.drawable.cloud_snow_b
+                                }
+                            } else {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_rain_w
+                                    false -> R.drawable.cloud_rain_b
+                                }
                             }
                         }
-                    }else{
-                        if (temp != -1 && temp < 273){
-                            weathericon = when(black){
-                                true->R.drawable.cloud_snow_w
-                                false->R.drawable.cloud_snow_b
+
+                    } else {
+                        if (temp != -1 && temp < 273)
+                            weathericon = when (black) {
+                                true -> R.drawable.cloud_moon_snow_w
+                                false -> R.drawable.cloud_moon_snow_b
                             }
-                        }else{
-                            weathericon = when(black){
-                                true->R.drawable.cloud_rain_w
-                                false->R.drawable.cloud_rain_b
-                            }
+                        else weathericon = when (black) {
+                            true -> R.drawable.cloud_moon_rain_w
+                            false -> R.drawable.cloud_moon_rain_b
                         }
                     }
 
-                }else{
-                    if (temp != -1 && temp < 273)
-                        weathericon = when(black){
-                            true->R.drawable.cloud_moon_snow_w
-                            false->R.drawable.cloud_moon_snow_b
+                }else {
+
+                    if (weathertimetoday in sunrise..sunset || sunset == 0) {
+
+                        if (insol > 30) {
+
+                            if (temp != -1 && temp < 273) {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_sun_snow_w
+                                    false -> R.drawable.cloud_sun_snow_b
+                                }
+                            } else {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_sun_little_rain_w
+                                    false -> R.drawable.cloud_sun_little_rain_b
+                                }
+                            }
+                        } else {
+                            if (temp != -1 && temp < 273) {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_snow_w
+                                    false -> R.drawable.cloud_snow_b
+                                }
+                            } else {
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_little_rain_w
+                                    false -> R.drawable.cloud_little_rain_b
+                                }
+                            }
                         }
-                    else weathericon = when(black){
-                        true->R.drawable.cloud_moon_rain_w
-                        false->R.drawable.cloud_moon_rain_b
+
+                    } else {
+                        if (temp != -1 && temp < 273)
+                            weathericon = when (black) {
+                                true -> R.drawable.cloud_moon_snow_w
+                                false -> R.drawable.cloud_moon_snow_b
+                            }
+                        else weathericon = when (black) {
+                            true -> R.drawable.cloud_moon_little_rain_w
+                            false -> R.drawable.cloud_moon_little_rain_b
+                        }
                     }
                 }
-
             }else{
 
-                if(weathertime in sunrise..sunset || sunset == 0) {
+                if(weathertimetoday in sunrise..sunset || sunset == 0) {
 
                     if(insol > 70){
                         weathericon = when(black){
@@ -100,31 +152,57 @@ class WeatherTools {
         }else{
             if(rain != -1){
                 if(rain > 10){
-                    if(weathertime in sunrise..sunset || sunset == 0) {
-                        if (temp != -1 && temp < 273)
-                            weathericon = when(black){
-                                true->R.drawable.cloud_snow_w
-                                false->R.drawable.cloud_snow_b
+
+                    if(rain > 65){
+                        if (weathertimetoday in sunrise..sunset || sunset == 0) {
+                            if (temp != -1 && temp < 273)
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_snow_w
+                                    false -> R.drawable.cloud_snow_b
+                                }
+                            else weathericon = when (black) {
+                                true -> R.drawable.cloud_rain_w
+                                false -> R.drawable.cloud_rain_b
                             }
-                        else weathericon = when(black){
-                                true->R.drawable.cloud_rain_w
-                                false->R.drawable.cloud_rain_b
+                        } else {
+                            if (temp != -1 && temp < 273)
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_moon_snow_w
+                                    false -> R.drawable.cloud_moon_snow_b
+                                }
+                            else
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_moon_rain_w
+                                    false -> R.drawable.cloud_moon_rain_b
+                                }
+                        }
+                    }else {
+                        if (weathertimetoday in sunrise..sunset || sunset == 0) {
+                            if (temp != -1 && temp < 273)
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_snow_w
+                                    false -> R.drawable.cloud_snow_b
+                                }
+                            else weathericon = when (black) {
+                                true -> R.drawable.cloud_little_rain_w
+                                false -> R.drawable.cloud_little_rain_b
                             }
-                    }else{
-                        if (temp != -1 && temp < 273)
-                            weathericon = when(black){
-                                true->R.drawable.cloud_moon_snow_w
-                                false->R.drawable.cloud_moon_snow_b
-                            }
-                        else
-                            weathericon = when(black){
-                                true->R.drawable.cloud_moon_rain_w
-                                false->R.drawable.cloud_moon_rain_b
-                            }
+                        } else {
+                            if (temp != -1 && temp < 273)
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_moon_snow_w
+                                    false -> R.drawable.cloud_moon_snow_b
+                                }
+                            else
+                                weathericon = when (black) {
+                                    true -> R.drawable.cloud_moon_little_rain_w
+                                    false -> R.drawable.cloud_moon_little_rain_b
+                                }
+                        }
                     }
                 }else{
 
-                    if(weathertime in sunrise..sunset || sunset == 0) {
+                    if(weathertimetoday in sunrise..sunset || sunset == 0) {
                         weathericon = when(black){
                             true->R.drawable.sun_w
                             false->R.drawable.sun_b
@@ -289,5 +367,153 @@ class WeatherTools {
                 else -> R.drawable.ic_battery_50_black_24dp
             }
         }
+    }
+
+
+    fun setBackground(tempout:String, rainfall:String, insolation:String, sunrise:Int, sunset:Int, timezone:Int, tempunit: String):Int{
+
+        var background:Int
+        val x = (0..1).random()
+
+        val systemtime = System.currentTimeMillis()/1000L
+        val systemtimezone = (TimeZone.getDefault().rawOffset + TimeZone.getDefault().dstSavings)/1000L
+        val weathertimetoday = systemtime - systemtimezone + timezone
+
+        if(x == 1){
+            //suncloud 0-3
+            val y = (0..5).random()
+            background = when(y){
+                0 -> R.drawable.sun_cloud_0
+                1 -> R.drawable.sun_cloud_1
+                2 -> R.drawable.sun_cloud_2
+                3 -> R.drawable.sun_cloud_3
+                else -> R.drawable.sun_cloud_2
+            }
+        }else{
+            //cloud 0-5
+            val y = (0..5).random()
+            background = when(y){
+                0 -> R.drawable.cloud_0
+                1 -> R.drawable.cloud_1
+                2 -> R.drawable.cloud_2
+                3 -> R.drawable.cloud_3
+                4 -> R.drawable.cloud_4
+                5 -> R.drawable.cloud_5
+                else -> R.drawable.cloud_2
+            }
+        }
+
+        var rain = -1
+        try{
+            rain = rainfall.toInt()
+        }catch (e: Exception){}
+
+        var temp = (-1).toDouble()
+        try{
+            temp = tempout.toDouble()
+            if(tempunit == "°C"){
+                temp +=  275.15
+            }else if(tempunit == "°F"){
+                temp = ((5 / 9) * (temp - 32 )) + 273.15
+            }
+
+        }catch (e: Exception){}
+
+        var insol = -1
+        try{
+            insol = insolation.toInt()
+        }catch (e: Exception){}
+
+        if(weathertimetoday in (sunrise-2200)..(sunrise+2200) || weathertimetoday in (sunset-2200)..(sunset+2200)){
+        //sunet 0-4
+            val z = (0..5).random()
+            background = when(z){
+                0 -> R.drawable.sun_sunset_0
+                1 -> R.drawable.sun_sunset_1
+                2 -> R.drawable.sun_sunset_2
+                3 -> R.drawable.sun_sunset_3
+                4 -> R.drawable.dew_0
+                5 -> R.drawable.sun_sunset_4
+                else -> R.drawable.sun_sunset_3
+            }
+        }else if((weathertimetoday > sunset || weathertimetoday < sunrise) && sunset != 0){
+        //moon 0-3
+            val z = (0..3).random()
+            background = when(z){
+                0 -> R.drawable.moon_0
+                1 -> R.drawable.moon_1
+                2 -> R.drawable.moon_2
+                3 -> R.drawable.moon_3
+                else -> R.drawable.moon_3
+            }
+        }else{
+
+            if(rain > 10){
+
+                if(rain > 90){
+                    background = R.drawable.rain_1
+                }else{
+                    val z = (0..3).random()
+                    background = when(z){
+                        0 -> R.drawable.rain_0
+                        1 -> R.drawable.rain_2
+                        2 -> R.drawable.rain_3
+                        3 -> R.drawable.dew_0
+                        else -> R.drawable.rain_0
+                    }
+                }
+            }else{
+
+                if(temp != (-1).toDouble() && temp < 270){
+                    val z = (0..2).random()
+                    if(z != 1){
+                        val w = (0..2).random()
+                        background = when(w){
+                            0 -> R.drawable.snow_0
+                            1 -> R.drawable.snow_1
+                            2 -> R.drawable.snow_2
+                            else -> R.drawable.snow_1
+                        }
+                    }
+                }else{
+                    if(insol in 70..100){
+                        //sun 0-4
+                        val z = (0..4).random()
+                        background = when(z){
+                            0 -> R.drawable.sun_0
+                            1 -> R.drawable.sun_1
+                            2 -> R.drawable.sun_2
+                            3 -> R.drawable.sun_3
+                            4 -> R.drawable.sun_4
+                            else -> R.drawable.sun_4
+                        }
+                    }else if(insol in 30..70){
+                        //sun cloud 0-3
+                        val z = (0..3).random()
+                        background = when(z){
+                            0 -> R.drawable.sun_cloud_0
+                            1 -> R.drawable.sun_cloud_1
+                            2 -> R.drawable.sun_cloud_2
+                            3 -> R.drawable.sun_cloud_3
+                            else -> R.drawable.sun_cloud_2
+                        }
+                    }else if (insol != -1){
+                        //cloud 0-5
+                        val z = (0..5).random()
+                        background = when(z){
+                            0 -> R.drawable.cloud_0
+                            1 -> R.drawable.cloud_1
+                            2 -> R.drawable.cloud_2
+                            3 -> R.drawable.cloud_3
+                            4 -> R.drawable.cloud_4
+                            5 -> R.drawable.cloud_5
+                            else -> R.drawable.cloud_2
+                        }
+                    }
+                }
+            }
+        }
+
+        return background
     }
 }

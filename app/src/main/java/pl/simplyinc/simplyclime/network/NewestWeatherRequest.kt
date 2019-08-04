@@ -6,10 +6,12 @@ import android.support.v4.content.ContextCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.SuperscriptSpan
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
@@ -23,13 +25,14 @@ import pl.simplyinc.simplyclime.elements.WeatherData
 import pl.simplyinc.simplyclime.elements.WeatherTools
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
 class NewestWeatherRequest {
 
     private val tool = WeatherTools()
 
-    fun getNewestWeather(context:Context, weatherOld:String, station:JSONObject, v:View) {
+    fun getNewestWeather(context:Context, position:Int, station:JSONObject, v:View) {
 
         val tempunit = station.getString("tempunit")
         val windunit = station.getString("windunit")
@@ -42,7 +45,10 @@ class NewestWeatherRequest {
                 if (!response.getBoolean("error")) {
                     val w = response.getJSONArray("weather").getJSONArray(0)
                     val unixTime = (System.currentTimeMillis() / 1000L).toDouble().roundToInt()
+
+
                     val tempimg = tool.getTempImgId(w.getString(0), true)
+
                     val tempin = tool.kelvintoTempUnit(w.getString(1), tempunit)
                     val tempout = tool.kelvintoTempUnit(w.getString(0), tempunit)
                     val wind = tool.mstoWindUnit(w.getString(6), windunit)
@@ -58,23 +64,28 @@ class NewestWeatherRequest {
                     val json = Json(JsonConfiguration.Stable)
                     val newweather = json.stringify(WeatherData.serializer(), newW)
                     val session = SessionPref(context)
-                    val allnewweathers = session.getPref("weathers").replace(weatherOld,newweather)
+                    var allnewweathers = ""
+                    val allweathers = session.getPref("weathers").split("|")
+                    for(i in 0 until allweathers.size-1){
+                        allnewweathers += if(position == i) "$newweather|" else allweathers[position]+"|"
+                    }
+
                     session.setPref("weathers", allnewweathers)
 
-                    setWeather(v,JSONObject(newweather), station, false)
+                    setWeather(v,JSONObject(newweather), station, false, context)
                 }else{
-                    setWeather(v,JSONObject(), station, true)
+                    setWeather(v,JSONObject(), station, true, context)
                 }
 
             },
             Response.ErrorListener {
-
+                Toast.makeText(context, context.getString(R.string.checkconnection), Toast.LENGTH_SHORT).show()
             })
 
         VolleySingleton.getInstance(context).addToRequestQueue(request)
     }
 
-    fun setWeather(v:View, w:JSONObject, s:JSONObject, error:Boolean):Boolean{
+    fun setWeather(v:View, w:JSONObject, s:JSONObject, error:Boolean, c:Context):Boolean{
         val city = v.findViewById<TextView>(R.id.citymain)
         val tempout = v.findViewById<TextView>(R.id.tempout)
         val tempin = v.findViewById<TextView>(R.id.tempin)
@@ -100,11 +111,11 @@ class NewestWeatherRequest {
         val allweather = v.findViewById<ConstraintLayout>(R.id.allweather)
         val errorlayout = v.findViewById<ConstraintLayout>(R.id.errorlayout)
 
-        val c = tempin.context
+
+        city.text = s.getString("city")
 
         if(error){
             allweather.visibility = View.GONE
-            city.visibility = View.GONE
             updated.visibility = View.GONE
             errorlayout.visibility = View.VISIBLE
             return false
@@ -112,8 +123,6 @@ class NewestWeatherRequest {
             allweather.visibility = View.VISIBLE
             errorlayout.visibility = View.GONE
         }
-
-        city.text = s.getString("city")
 
         //temp
             if(w.getString("tempin") != "null") {
@@ -233,8 +242,9 @@ class NewestWeatherRequest {
             batteryimg.visibility = View.GONE
         }
 
+
         val weatherimage = tool.weathericon(w.getString("tempout"), w.getString("rainfall"), w.getString("insolation"),
-            s.getInt("sunrise"), s.getInt("sunset"), w.getInt("time"), true)
+            s.getInt("sunrise"), s.getInt("sunset"), s.getInt("timezone"), true)
 
         weatherimg.background = ContextCompat.getDrawable(c, weatherimage)
 
@@ -246,6 +256,5 @@ class NewestWeatherRequest {
         updated.text = text
         return true
     }
-
 
 }

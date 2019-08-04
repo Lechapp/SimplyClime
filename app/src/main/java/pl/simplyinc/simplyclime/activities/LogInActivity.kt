@@ -77,10 +77,12 @@ class LogInActivity : AppCompatActivity() {
                     val names = weatherstations.getJSONArray("names")
                     val cities = weatherstations.getJSONArray("cities")
                     val timezone = weatherstations.getJSONArray("timezone")
+                    val apikeys = weatherstations.getJSONArray("apikey")
 
 
                     for(i in 0 until ids.length()) {
-                        val station = StationsData("mystation", cities.getString(i), timezone.getInt(i), ids.getString(i), names.getString(i))
+                        val station = StationsData("mystation", cities.getString(i), timezone.getInt(i), ids.getString(i),
+                            names.getString(i), apikeys.getString(i))
                         st.append(json.stringify(StationsData.serializer(), station)).append("|")
 
                         val weather = WeatherData()

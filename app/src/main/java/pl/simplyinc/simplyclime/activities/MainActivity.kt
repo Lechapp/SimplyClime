@@ -12,21 +12,19 @@ import android.support.v4.view.ViewPager.OnPageChangeListener
 import pl.simplyinc.simplyclime.adapters.StationNameAdapter
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
-import android.view.Window
 import com.android.volley.toolbox.StringRequest
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
 
-val server = "192.168.1.8/weatherapp"
+const val server = "192.168.1.8/weatherapp"
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var pagerAdapter: PagerAdapter
+    private lateinit var pagerAdapter: PagerAdapter
     lateinit var session:SessionPref
     lateinit var adaptername:StationNameAdapter
     private lateinit var title:ArrayList<String>
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,32 +34,10 @@ class MainActivity : AppCompatActivity() {
         pagerAdapter = PagerAdapter(supportFragmentManager, this)
         weathers.adapter = pagerAdapter
 
-        if(intent.getBooleanExtra("station", false)){
-            adaptername.setActive(title.size-2)
-            weathers.setCurrentItem(title.size-2,true)
-        }
-        val widgetposition = intent.getIntExtra("fromwidget", -1)
-        if(widgetposition != -1){
-            adaptername.setActive(widgetposition)
-            weathers.setCurrentItem(widgetposition,true)
-        }
+        checkactiveposition()
 
-        if(session.getPref("login") != "") {
-            tokenCheck()
-            loginname.text = session.getPref("login")
-            loginname.visibility = View.VISIBLE
-            checklogin.text = getString(R.string.logged)
+        checkLogIn()
 
-            checklogin.setOnClickListener {
-                logOut()
-            }
-        }else{
-            loginname.visibility = View.GONE
-            checklogin.setOnClickListener {
-                val intent = Intent(applicationContext, LogInActivity::class.java)
-                startActivity(intent)
-            }
-        }
 
         weathers.addOnPageChangeListener(object : OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {}
@@ -74,6 +50,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onBackPressed() {
+        if(!pagerAdapter.hidedaylist(weathers.currentItem))
+            super.onBackPressed()
+    }
     private fun setTitleBar(){
         title = arrayListOf()
         val stations = session.getPref("stations").split("|")
@@ -122,14 +102,19 @@ class MainActivity : AppCompatActivity() {
         session.setPref("login","")
         session.setPref("id","")
         val stations = session.getPref("stations").split("|")
+        val weathers = session.getPref("weathers").split("|")
 
         var activestation = ""
+        var activeweather = ""
         for(i in 0 until stations.size-1) {
             val station = JSONObject(stations[i])
-            if (station.getString("type") != "mystation")
+            if (station.getString("type") != "mystation") {
                 activestation += (stations[i] + "|")
+                activeweather += (weathers[i] + "|")
+            }
         }
         session.setPref("stations", activestation)
+        session.setPref("weathers", activeweather)
 
         loginname.visibility = View.GONE
         checklogin.text = getString(R.string.notlogg)
@@ -143,4 +128,40 @@ class MainActivity : AppCompatActivity() {
         setTitleBar()
     }
 
+
+    private fun checkactiveposition(){
+        if(intent.getBooleanExtra("station", false)){
+            adaptername.setActive(title.size-2)
+            weathers.setCurrentItem(title.size-2,true)
+        }
+        val widgetposition = intent.getIntExtra("fromwidget", -1)
+        if(widgetposition != -1){
+            adaptername.setActive(widgetposition)
+            weathers.setCurrentItem(widgetposition,true)
+        }
+        val weatherposition = intent.getIntExtra("fromsettings", -1)
+        if(weatherposition != -1){
+            adaptername.setActive(weatherposition)
+            weathers.setCurrentItem(weatherposition,false)
+        }
+    }
+
+    private fun checkLogIn(){
+        if(session.getPref("login") != "") {
+            tokenCheck()
+            loginname.text = session.getPref("login")
+            loginname.visibility = View.VISIBLE
+            checklogin.text = getString(R.string.logged)
+
+            checklogin.setOnClickListener {
+                logOut()
+            }
+        }else{
+            loginname.visibility = View.GONE
+            checklogin.setOnClickListener {
+                val intent = Intent(applicationContext, LogInActivity::class.java)
+                startActivity(intent)
+            }
+        }
+    }
 }

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:background="@drawable/roundcorner"
+                                             android:layout_marginStart="30dp"
+                                             android:paddingBottom="10dp"
+                                             android:layout_marginEnd="30dp"
+                                             android:layout_marginTop="10dp"
+                                             android:layout_height="wrap_content" android:id="@+id/showmore">
+
+    <ImageView
+            android:layout_width="70dp"
+            android:contentDescription="@string/weathericon"
+            android:layout_height="70dp" android:src="@drawable/cloud_sun_b"
+            android:id="@+id/dayicon" android:layout_marginTop="24dp"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="24dp" android:visibility="visible"/>
+    <TextView
+            android:textColor="@color/white"
+            android:text="@string/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dayday" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"/>
+    <TextView
+            android:textColor="@color/white"
+            android:text="@string/tempout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/daytempout" android:layout_marginTop="2dp"
+            app:layout_constraintTop_toBottomOf="@+id/dayicon" app:layout_constraintEnd_toEndOf="@+id/dayicon"
+            app:layout_constraintStart_toStartOf="@+id/dayicon" android:textSize="16sp"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_width="85dp"
+            android:layout_height="wrap_content" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/dayday" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="12dp" android:id="@+id/dayalltempin" android:visibility="visible">
+        <ImageView
+                android:layout_width="24dp"
+                android:contentDescription="@string/tempicon"
+                android:layout_height="24dp" android:src="@drawable/temp2_w" android:id="@+id/imageView11"
+                android:layout_weight="0"/>
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/tempin"
+                android:layout_marginStart="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/daytempin" android:layout_weight="0"
+                android:textSize="12sp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:id="@+id/dayallhumi"
+            android:layout_marginTop="6dp" app:layout_constraintTop_toBottomOf="@+id/dayday"
+            android:layout_marginStart="102dp" app:layout_constraintStart_toStartOf="parent"
+            android:visibility="visible">
+        <ImageView
+                android:layout_width="22dp"
+                android:contentDescription="@string/humicon"
+                android:layout_height="24dp" android:src="@drawable/humidity_w" android:id="@+id/imageView10"
+                android:layout_weight="1"/>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:layout_weight="1">
+            <TextView
+                    android:textColor="@color/white"
+                    android:text="@string/humidityin"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="1dp"
+                    android:layout_height="wrap_content" android:id="@+id/dayhumiin" android:textSize="12sp"/>
+            <TextView
+                    android:textColor="@color/white"
+                    android:text="@string/humidityout"
+                    android:layout_marginStart="1dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/dayhumiout" android:textSize="12sp"/>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="85dp"
+            android:gravity="center_vertical"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="13dp" android:id="@+id/dayallinsol"
+            android:visibility="visible" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/dayalltempin">
+        <ImageView
+                android:layout_width="20dp"
+                android:contentDescription="@string/insolation"
+                android:layout_height="20dp" android:src="@drawable/sun_w" android:id="@+id/imageView12"
+                android:layout_weight="0"/>
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/insolation"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="1dp"
+                android:layout_height="wrap_content" android:id="@+id/dayinsol" android:layout_weight="0"
+                android:textSize="12sp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/dayallrain"
+            android:layout_marginStart="104dp" app:layout_constraintStart_toStartOf="parent"
+            android:visibility="visible" app:layout_constraintTop_toBottomOf="@+id/dayallhumi"
+            android:layout_marginTop="2dp">
+        <ImageView
+                android:layout_width="18dp"
+                android:contentDescription="@string/rainfall"
+                android:layout_height="20dp" android:src="@drawable/umbrella_w" android:id="@+id/imageView13"
+                android:layout_weight="1"/>
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/rainfall"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="3dp"
+                android:layout_height="wrap_content" android:id="@+id/dayrain" android:layout_weight="1"
+                android:textSize="12sp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="85dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="11dp"
+            android:id="@+id/dayallwind" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/dayallinsol" android:visibility="visible">
+        <ImageView
+                android:contentDescription="@string/windspeed"
+                android:layout_width="20dp"
+                android:layout_height="20dp" android:src="@drawable/wind_w" android:id="@+id/imageView14"
+                android:layout_weight="1"/>
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/windspeed"
+                android:layout_marginStart="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/daywind" android:layout_weight="1"
+                android:textSize="12sp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dayallpress" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/dayallrain"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="103dp"
+            android:visibility="visible">
+        <ImageView
+                android:contentDescription="@string/pressure"
+                android:layout_width="18dp"
+                android:layout_height="20dp" android:src="@drawable/pressure_w" android:id="@+id/imageView15"
+        />
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/pressure"
+                android:gravity="center"
+                android:layout_marginStart="1dp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" android:id="@+id/daypress"
+                android:textSize="12sp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@+id/dayday" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="12dp" android:layout_marginTop="95dp" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp" android:id="@+id/dayallairpol">
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/airpollution"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content" android:textSize="12sp"/>
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/airpollution10"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="5dp"
+                android:padding="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/dayairpol10" android:textSize="12sp"/>
+        <TextView
+                android:textColor="@color/white"
+                android:text="@string/airpollution25"
+                android:layout_width="wrap_content"
+                android:padding="2dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_height="wrap_content" android:id="@+id/dayairpol25" android:textSize="12sp"/>
+    </LinearLayout>
+    <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp" app:srcCompat="@drawable/ic_battery_50_white_24dp"
+            android:id="@+id/daybatteryimg" android:layout_marginEnd="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="1dp"
+            android:contentDescription="@string/baterry"
+            app:layout_constraintTop_toTopOf="parent"/>
+    <TextView
+            android:text="@string/baterry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:id="@+id/daybatterylvl" app:layout_constraintEnd_toStartOf="@+id/daybatteryimg"
+            android:layout_marginEnd="2dp" android:layout_marginTop="1dp" app:layout_constraintTop_toTopOf="parent"
+            android:textSize="10sp" android:layout_marginBottom="1dp"
+            app:layout_constraintBottom_toBottomOf="@+id/daybatteryimg"/>
+</android.support.constraint.ConstraintLayout>

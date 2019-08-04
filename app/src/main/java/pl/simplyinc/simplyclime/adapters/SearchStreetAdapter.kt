@@ -12,6 +12,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.MainActivity
+import pl.simplyinc.simplyclime.elements.ForecastData
 import pl.simplyinc.simplyclime.elements.SessionPref
 import pl.simplyinc.simplyclime.elements.StationsData
 import pl.simplyinc.simplyclime.elements.WeatherData
@@ -40,6 +41,7 @@ class SearchStreetAdapter(val context:Context, val liststations:JSONArray, val c
         street.setOnClickListener {
             val activestations = session.getPref("stations")
             val activeweathers = session.getPref("weathers")
+            val activeforecasts = session.getPref("forecasts")
 
             val json = Json(JsonConfiguration.Stable)
 
@@ -49,11 +51,16 @@ class SearchStreetAdapter(val context:Context, val liststations:JSONArray, val c
             val weather = WeatherData()
             val addweather = json.stringify(WeatherData.serializer(), weather) + "|"
 
+            val forecast = ForecastData()
+            val addedforecast = json.stringify(ForecastData.serializer(), forecast) + "|"
+
             if(activestations.indexOf("\"searchvalue\":\""+dataArray.getString(0)+"\"") != -1){
                 Toast.makeText(context, context.getString(R.string.alreadyadd), Toast.LENGTH_SHORT).show()
             }else {
                 session.setPref("stations", activestations + selectedcity)
                 session.setPref("weathers", activeweathers + addweather)
+                session.setPref("forecasts", activeforecasts + addedforecast)
+
                 val intent = Intent(context, MainActivity::class.java)
                 intent.putExtra("station", true)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

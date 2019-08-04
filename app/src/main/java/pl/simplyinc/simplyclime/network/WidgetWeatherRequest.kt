@@ -23,13 +23,15 @@ import android.text.Spanned
 import android.text.SpannableStringBuilder
 import android.text.style.SuperscriptSpan
 import android.util.Log
+import android.widget.ImageView
+import android.widget.TextView
 
 
 class WidgetWeatherRequest {
 
    private val tool = WeatherTools()
 
-    fun getNewestWeatherWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, weatherOld:String, station:JSONObject, widgetinfo:JSONObject) {
+    fun getNewestWeatherWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, weatherOld:String, station:JSONObject, widgetinfo:JSONObject,f:JSONObject) {
         val tempunit = station.getString("tempunit")
         val windunit = station.getString("windunit")
         val searchvalue = station.getString("searchvalue")
@@ -60,9 +62,9 @@ class WidgetWeatherRequest {
                 val allnewweathers = session.getPref("weathers").replace(weatherOld,newweather)
                 session.setPref("weathers", allnewweathers)
 
-                setWidget(context, appWidgetManager, appWidgetId, newweather, station, widgetinfo, false)
+                setWidget(context, appWidgetManager, appWidgetId, newweather, station, widgetinfo, f, false)
             }else{
-                setWidget(context, appWidgetManager, appWidgetId, "", station, widgetinfo, true)
+                setWidget(context, appWidgetManager, appWidgetId, "", station, widgetinfo, f, true)
             }
 
         },
@@ -74,11 +76,13 @@ class WidgetWeatherRequest {
     }
 
     fun setWidget(c: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, weather:String, s:JSONObject,
-                  widgetinfo:JSONObject, error:Boolean):Boolean{
+                  widgetinfo:JSONObject, f:JSONObject, error:Boolean):Boolean{
 
         val views = RemoteViews(c.packageName, R.layout.newest_weather)
         //s in argument is station data
         views.setTextViewText(R.id.title, s.getString("title"))
+        val black = if(widgetinfo.getBoolean("blackbg")) "weathericon" else "weathericonblack"
+        setForecast(views,f,c, s.getString("tempunit"), black)
 
         if(error) {
             views.setViewVisibility(R.id.battery, View.GONE)
@@ -243,13 +247,14 @@ class WidgetWeatherRequest {
 
         //weatherimg
         val weatherimg = tool.weathericon(w.getString("tempout"), w.getString("rainfall"), w.getString("insolation"),
-                                        s.getInt("sunrise"), s.getInt("sunset"), w.getInt("time"), widgetinfo.getBoolean("blackbg"))
+                                        s.getInt("sunrise"), s.getInt("sunset"), s.getInt("timezone"), widgetinfo.getBoolean("blackbg"))
         views.setInt(R.id.weathericon, "setBackgroundResource", weatherimg)
 
 
         //setTheme
         views.setInt(R.id.widget, "setBackgroundColor", widgetinfo.getInt("background"))
         if(widgetinfo.getBoolean("blackbg")) {
+            views.setInt(R.id.tempimage, "setBackgroundResource", R.drawable.temp2_w)
             views.setInt(R.id.humidityimg, "setBackgroundResource", R.drawable.humidity_w)
             views.setInt(R.id.insolationimg, "setBackgroundResource", R.drawable.sun_w)
             views.setInt(R.id.rainfallimg, "setBackgroundResource", R.drawable.umbrella_w)
@@ -268,12 +273,89 @@ class WidgetWeatherRequest {
             views.setTextColor(R.id.pressure,white)
             views.setTextColor(R.id.windspeed,white)
             views.setTextColor(R.id.airpollution,white)
+            views.setTextColor(R.id.widgetday1,white)
+            views.setTextColor(R.id.widgetday2,white)
+            views.setTextColor(R.id.widgetday3,white)
+            views.setTextColor(R.id.widgetday4,white)
+            views.setTextColor(R.id.widgetday5,white)
+            views.setTextColor(R.id.forecasttemp1,white)
+            views.setTextColor(R.id.forecasttemp2,white)
+            views.setTextColor(R.id.forecasttemp3,white)
+            views.setTextColor(R.id.forecasttemp4,white)
+            views.setTextColor(R.id.forecasttemp5,white)
             views.setTextColor(R.id.updatedat,ContextCompat.getColor(c, R.color.whitesmoke))
-        }
+        }else views.setInt(R.id.tempimage, "setBackgroundResource", R.drawable.temp2_b)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
         return true
 
+    }
+
+
+    private fun setForecast(v:RemoteViews, f:JSONObject, c:Context, tempunit:String, blacktheme:String){
+
+        val arrayimg = listOf(
+            R.id.forecastimg1,
+            R.id.forecastimg2,
+            R.id.forecastimg3,
+            R.id.forecastimg4,
+            R.id.forecastimg5)
+
+        val arraytemp = listOf(
+            R.id.forecasttemp1,
+            R.id.forecasttemp2,
+            R.id.forecasttemp3,
+            R.id.forecasttemp4,
+            R.id.forecasttemp5)
+
+        val arraydate = listOf(
+            R.id.widgetday1,
+            R.id.widgetday2,
+            R.id.widgetday3,
+            R.id.widgetday4,
+            R.id.widgetday5)
+
+
+        val time = f.getInt("time")
+        val weatherdate = SimpleDateFormat("u|dd", Locale(Locale.getDefault().displayLanguage))
+        val day = weatherdate.format(Date(time*1000L)).split("|")
+        var dayofWeek = (day[0]).toInt()
+        var dayofMonth = (day[1]).toInt()
+        val lastday = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
+
+
+        for(i in 0 until f.length()-1){
+            var dayone = JSONObject()
+            try {
+                dayone = JSONObject(f.getString("day$i"))
+            }catch (e:Exception){
+                v.setViewVisibility(R.id.widgetforecast, View.GONE)
+                break
+            }
+            val dayofWeekText:String = when(dayofWeek){
+                1 -> c.getString(R.string.monday)
+                2 -> c.getString(R.string.tuesday)
+                3 -> c.getString(R.string.wednesday)
+                4 -> c.getString(R.string.thursday)
+                5 -> c.getString(R.string.friday)
+                6 -> c.getString(R.string.saturday)
+                7 -> c.getString(R.string.sunday)
+                else -> ""
+            }
+
+            v.setInt(arrayimg[i], "setBackgroundResource",dayone.getInt(blacktheme))
+            v.setTextViewText(arraytemp[i],dayone.getString("tempmax")+"/"+dayone.getString("tempmin")+ tempunit)
+            v.setTextViewText(arraydate[i],"$dayofWeekText $dayofMonth")
+
+            dayofWeek++
+            dayofMonth++
+
+            if(dayofMonth == (lastday+1))
+                dayofMonth = 1
+
+            if(dayofWeek == 8)
+                dayofWeek = 1
+        }
     }
 
 }

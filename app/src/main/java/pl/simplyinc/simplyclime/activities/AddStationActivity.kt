@@ -11,11 +11,13 @@ import org.json.JSONObject
 import pl.simplyinc.simplyclime.elements.SessionPref
 import pl.simplyinc.simplyclime.network.VolleySingleton
 import android.location.Geocoder
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import pl.simplyinc.simplyclime.R
+import pl.simplyinc.simplyclime.elements.ForecastData
 import pl.simplyinc.simplyclime.elements.StationsData
 import pl.simplyinc.simplyclime.elements.WeatherData
 import java.lang.Exception
@@ -28,6 +30,8 @@ class AddStationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_station)
+        supportActionBar?.title = getString(R.string.addstation)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         progressaddStation.visibility = View.GONE
 
         addbutton.setOnClickListener {
@@ -35,8 +39,17 @@ class AddStationActivity : AppCompatActivity() {
             if(checkData()){
                addStation()
             }
-
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if(id == android.R.id.home){
+            val intent = Intent(applicationContext, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun checkData():Boolean{
@@ -94,17 +107,22 @@ class AddStationActivity : AppCompatActivity() {
                     val json = Json(JsonConfiguration.Stable)
 
                     val station = StationsData("mystation", city, response.getInt("timezone"),
-                        response.getString("stationID"),response.getString("name"))
+                        response.getString("stationID"),response.getString("name"), response.getString("apikey"))
                     val addedstation = json.stringify(StationsData.serializer(), station) + "|"
 
                     val weather = WeatherData()
                     val addedweather = json.stringify(WeatherData.serializer(), weather) + "|"
 
+                    val forecast = ForecastData()
+                    val addedforecast = json.stringify(ForecastData.serializer(), forecast) + "|"
+
                     val activestation = session.getPref("stations")
                     val activeweather = session.getPref("weathers")
+                    val activeforecast = session.getPref("forecasts")
 
                     session.setPref("stations",activestation+addedstation)
-                    session.setPref("weather",activeweather+addedweather)
+                    session.setPref("weathers",activeweather+addedweather)
+                    session.setPref("forecasts",activeforecast+addedforecast)
 
                     val intent = Intent(applicationContext, MainActivity::class.java)
                     intent.putExtra("station", true)

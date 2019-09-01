@@ -2,120 +2,145 @@ package pl.simplyinc.simplyclime.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import android.widget.ImageView
-import android.widget.ScrollView
-import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_weatherinfo.*
 import org.json.JSONArray
 import org.json.JSONObject
-import org.w3c.dom.Text
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.MainActivity
 import pl.simplyinc.simplyclime.activities.SettingsActivity
 import pl.simplyinc.simplyclime.adapters.DayByDayAdapter
 import pl.simplyinc.simplyclime.adapters.ForecastAdapter
-import pl.simplyinc.simplyclime.elements.CircularProgressBar
-import pl.simplyinc.simplyclime.elements.SessionPref
-import pl.simplyinc.simplyclime.elements.WeatherTools
+import pl.simplyinc.simplyclime.elements.*
 import pl.simplyinc.simplyclime.network.*
-import pl.simplyinc.simplyclime.widget.NewestWeather
-import java.lang.Exception
-import java.text.FieldPosition
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 private const val ARG_PARAM1 = "position"
 
 class Weatherinfo : Fragment() {
 
-    private lateinit var dayProgress:CircularProgressBar
-    private lateinit var nightProgress:CircularProgressBar
-    private lateinit var sunriset:TextView
-    private lateinit var sunsett:TextView
     lateinit var station:String
-    lateinit var dayrecycler: RecyclerView
-    private lateinit var background:ScrollView
-    private lateinit var daybyday:TextView
+    private lateinit var rootview:View
     private var position:Int = -1
-    private lateinit var act:MainActivity
-    private lateinit var forecastRecycler:RecyclerView
+    var wantToOpenDayByDay = false
     private lateinit var session:SessionPref
     private lateinit var forecastObj:JSONObject
-    lateinit var dayByDayRequest: DayByDayRequest
+    private var dayByDayRequest = DayByDayRequest()
+    private var forecastWeatherData = mutableListOf<JSONArray>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val rootview =  inflater.inflate(R.layout.fragment_weatherinfo, container, false)
-        val settings = rootview.findViewById<ImageView>(R.id.settings)
-        dayByDayRequest = DayByDayRequest()
-        dayProgress = rootview.findViewById(R.id.day_ProgressBar)
-        dayProgress.setType("day")
-        forecastRecycler = rootview.findViewById(R.id.forecastrecycler)
-        nightProgress = rootview.findViewById(R.id.night_ProgressBar)
-        daybyday = rootview.findViewById(R.id.daybyday)
-        nightProgress.setType("night")
-        act = activity as MainActivity
-        dayrecycler = rootview.findViewById(R.id.daybydayrec)
-        sunriset = rootview.findViewById(R.id.sunrisetime)
-        sunsett = rootview.findViewById(R.id.sunsettime)
-        background = rootview.findViewById(R.id.bgweather)
-        session = SessionPref(activity!!.applicationContext)
-        dayrecycler.layoutManager = LinearLayoutManager(activity!!.applicationContext)
-        val weatherall = session.getPref("weathers").split("|")
+        rootview = inflater.inflate(R.layout.fragment_weatherinfo, container, false)
+        return rootview
+    }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        setVal()
+
+        val weatherall = session.getPref("weathers").split("|")
         val weather = weatherall[position]
-        station = session.getPref("stations").split("|")[position]
-        val update = NewestWeatherRequest()
+
+        val update = NewestWeatherRequest(activity!!, rootview, position)
         val unixTime = System.currentTimeMillis() / 1000L
 
         if(weatherall.size-1 > position){
-
             val stationdata = JSONObject(station)
-            if(weather.length > 5 && station.length > 5) {
-                forecastRecycler.layoutManager = LinearLayoutManager(activity!!.applicationContext, LinearLayoutManager.HORIZONTAL, false)
-                val weatherdata = JSONObject(weather)
-                val forecastsall = session.getPref("forecasts").split("|")
-                forecastObj = JSONObject(forecastsall[position])
-                if(stationdata.getInt("refreshtime") + weatherdata.getInt("updatedtime") <= unixTime)
-                    update.getNewestWeather(activity!!.applicationContext, position, stationdata, rootview)
-                else
-                  update.setWeather(rootview, weatherdata, stationdata, false, activity!!.applicationContext)
+            val chart = ChartRequest(activity!!.applicationContext, weatherchart, chartProgress, swipetutorial)
+            var isChartSet = false
 
-                setdayprogress(stationdata)
-                setBackground(weatherdata, stationdata)
-                setClickDayByDay()
+            forecastrecycler.layoutManager = LinearLayoutManager(activity!!.applicationContext, LinearLayoutManager.HORIZONTAL, false)
+            val weatherdata = JSONObject(weather)
 
+            if(stationdata.getInt("refreshtime") + weatherdata.getInt("updatedtime") <= unixTime) {
+                if(stationdata.getBoolean("gps")){
+
+                    val gps = GpsLocation(activity!!,
+                        activity!!.applicationContext,
+                        false,
+                        position,
+                        stationdata,
+                        rootview,
+                        false,
+                        null,
+                        "",
+                        false,
+                        chart,
+                        this)
+                    gps.getLocation()
+                    isChartSet = true
+                }else {
+                    if(stationdata.getBoolean("privstation"))
+                        update.getNewestWeather(stationdata) {}
+                    else update.getNewestWeatherOpenWeather(stationdata){}
+                }
+            }else{
+                if(stationdata.getBoolean("gps")){
+                    val gps = GpsLocation(activity!!,
+                        activity!!.applicationContext,
+                        false,
+                        position,
+                        stationdata,
+                        rootview,
+                        false,
+                        null,
+                        weather,
+                        true,
+                        chart,
+                        this)
+                    gps.getLocation()
+                    isChartSet = true
+                }else
+                    update.setWeather(weatherdata, stationdata, false)
             }
+            setdayprogress(stationdata)
+            setBackground(weatherdata, stationdata)
+            setClickDayByDay()
 
+            if(!isChartSet) {
+                if(stationdata.getBoolean("privstation")) {
+                    chart.getChartData(
+                        stationdata.getString("searchvalue"),
+                        stationdata.getString("tempunit")
+                    )
+                }else{
+                    chart.getChartDataOpenWeather(
+                        stationdata.getString("city"),
+                        stationdata.getString("tempunit")
+                    ){
+                        forecastWeatherData = it
+                        if(wantToOpenDayByDay)
+                            setDayByDayForecastOpenWeather()
+                    }
+                }
+            }
             settings.setOnClickListener{
                 val intent = Intent(activity!!.applicationContext, SettingsActivity::class.java)
                 intent.putExtra("position", position)
                 startActivity(intent)
             }
         }
-        return rootview
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             position = it.getInt(ARG_PARAM1)
         }
-
     }
 
 
@@ -133,16 +158,30 @@ class Weatherinfo : Fragment() {
 
         daybyday.setOnClickListener {
 
-            dayByDayRequest.getWeather(activity!!.applicationContext, station, dayrecycler, forecastrecycler, progressWeatherDay)
-
             val stat = JSONObject(station)
             val now = System.currentTimeMillis()/1000L
+            val forecastsall = session.getPref("forecasts").split("|")
+            forecastObj = JSONObject(forecastsall[position])
+
             if(forecastObj.getInt("time") < (now-12800)) {
+                station = session.getPref("stations").split("|")[position]
+                dayByDayRequest = DayByDayRequest()
                 val forecast = ForecastRequest(activity!!.applicationContext, position, stat.getString("tempunit"))
-                forecast.getNewestForecast(stat.getString("city"), forecastRecycler)
+                forecast.getNewestForecast("q="+stat.getString("city"), forecastrecycler){}
             }else{
                 forecastrecycler.adapter =
                     ForecastAdapter(activity!!.applicationContext, forecastObj, stat.getString("tempunit"))
+            }
+            if(stat.getBoolean("privstation")) {
+                dayByDayRequest.getWeather(
+                    activity!!.applicationContext,
+                    station,
+                    daybydayrec,
+                    forecastrecycler,
+                    progressWeatherDay
+                )
+            }else{
+                setDayByDayForecastOpenWeather()
             }
             allmain.visibility = View.GONE
             dayfragment.visibility = View.VISIBLE
@@ -150,9 +189,31 @@ class Weatherinfo : Fragment() {
         }
     }
 
+    fun setForecastData(foracast:MutableList<JSONArray>){
+        forecastWeatherData = foracast
+        if(wantToOpenDayByDay)
+            setDayByDayForecastOpenWeather()
+    }
+
+    private fun setDayByDayForecastOpenWeather() {
+        if (forecastWeatherData.size > 10) {
+            val adapt = DayByDayAdapter(
+                context!!,
+                forecastWeatherData,
+                station,
+                daybydayrec,
+                forecastrecycler,
+                progressWeatherDay,
+                true,
+                true
+            )
+            daybydayrec.adapter = adapt
+            daybydayrec.visibility = View.VISIBLE
+        }else wantToOpenDayByDay = true
+    }
 
     fun hideDayByDay():Boolean{
-        return if(dayfragment.visibility == View.VISIBLE) {
+        return if(dayfragment != null && dayfragment.visibility == View.VISIBLE) {
             dayfragment.visibility = View.GONE
             allmain.visibility = View.VISIBLE
             allmain.animation = AnimationUtils.loadAnimation(activity!!.applicationContext, R.anim.slidein_from_left_to_right)
@@ -163,19 +224,18 @@ class Weatherinfo : Fragment() {
 
     private fun setdayprogress(stationdata:JSONObject){
         val sunset = SunsetRequest()
-        val sdf = SimpleDateFormat("dd",Locale(Locale.getDefault().displayLanguage))
+        val sdf = SimpleDateFormat("dd", Locale.getDefault())
+        sdf.timeZone = TimeZone.getTimeZone("GMT")
+
         val currentday = sdf.format(Date()).toInt()
         val saveday = sdf.format(Date(stationdata.getLong("sunset")*1000L)).toInt()
-        if(saveday != currentday){
+        if(saveday != currentday || stationdata.getInt("sunset") == 0){
            sunset.getNewestSunset(activity!!.applicationContext, stationdata.getString("city"),position,
-               dayProgress,nightProgress, sunsett, sunriset)
+               day_ProgressBar,night_ProgressBar, sunsettime, sunrisetime)
 
             setRefreshTime()
-
         }else{
-            setRefreshTime()
-
-            sunset.setDayProgress(dayProgress,nightProgress, sunsett, sunriset, stationdata.getInt("sunset"),
+            sunset.setDayProgress(day_ProgressBar, night_ProgressBar, sunsettime, sunrisetime, stationdata.getInt("sunset"),
                 stationdata.getInt("sunrise"), stationdata.getInt("timezone"))
         }
     }
@@ -189,15 +249,49 @@ class Weatherinfo : Fragment() {
         val refreshtime = GetRefreshStationTime(session, station)
 
         if(stationdata.getString("type") != "city"){
-            refreshtime.getNewestSunset(activity!!.applicationContext, stationdata.getString("searchvalue"))
+            refreshtime.getNewestRefreshTime(activity!!.applicationContext, stationdata.getString("searchvalue"))
         }else refreshtime.setRefreshTime()
 
     }
 
-    private fun setBackground(w:JSONObject, s:JSONObject){
+    private fun setVal(){
+        day_ProgressBar.setType("day")
+        night_ProgressBar.setType("night")
+        val act = activity as MainActivity
+        act.adaptername.setActive(position)
+        session = SessionPref(activity!!.applicationContext)
+        daybydayrec.layoutManager = LinearLayoutManager(activity!!.applicationContext)
+        val allstat =  session.getPref("stations").split("|")
+        station = allstat[position]
 
-        val img = WeatherTools().setBackground(w.getString("tempout"),w.getString("rainfall"), w.getString("insolation"),
-            s.getInt("sunrise"), s.getInt("sunset"),s.getInt("timezone"),s.getString("tempunit"))
-        background.background = ContextCompat.getDrawable(context!!, img)
+        val containerweather = rootview.findViewById<ConstraintLayout>(R.id.containerweather)
+        val listeer = OnSwipeTouchListener(act.applicationContext, null, null, (allstat.size-1).toFloat(), act)
+        containerweather.setOnTouchListener(listeer)
+    }
+
+    private fun setBackground(w:JSONObject, s:JSONObject) {
+
+        val img = if (s.getBoolean("privstation")) {
+            WeatherTools().setBackground(
+                w.getString("tempout"),
+                w.getString("rainfall"),
+                w.getString("insolation"),
+                s.getInt("sunrise"),
+                s.getInt("sunset"),
+                s.getInt("timezone"),
+                s.getString("tempunit")
+            )
+        }else{
+            WeatherTools().setBackgroundOpenWeather(
+                w.getString("main"),
+                w.getString("description"),
+                s.getInt("timezone"),
+                s.getInt("sunrise"),
+                s.getInt("sunset"),
+                w.getString("rainfall"))
+        }
+
+        bgweather.background = ContextCompat.getDrawable(context!!, img)
+
     }
 }

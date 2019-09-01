@@ -7,7 +7,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp" android:id="@+id/all">
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:id="@+id/all">
 
 
         <TextView
@@ -19,11 +21,15 @@
         <android.support.v7.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:nestedScrollingEnabled="false"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:layout_marginTop="10dp"
                 android:layout_height="match_parent" android:id="@+id/mylocations"/>
         <TextView
                 android:text="@string/theme"
                 android:layout_marginTop="10dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/textView12"/>
         <Switch
@@ -36,11 +42,15 @@
                 android:text="@string/transparenty"
                 android:layout_width="match_parent"
                 android:layout_marginTop="20dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:layout_marginBottom="10dp"
                 android:layout_height="wrap_content" android:id="@+id/textView10"/>
         <SeekBar
                 android:layout_width="match_parent"
                 android:progress="70"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:layout_height="wrap_content" android:id="@+id/seekBar"/>
         <TextView
                 android:gravity="center"
@@ -49,116 +59,144 @@
         <TextView
                 android:text="@string/visibility"
                 android:layout_width="match_parent"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginBottom="8dp"
                 android:layout_height="wrap_content" android:id="@+id/textView9"/>
         <LinearLayout
                 android:orientation="horizontal"
                 android:gravity="center"
+                android:baselineAligned="false"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
             <LinearLayout
-                    android:orientation="vertical"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="17dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
                 <Switch
+                        android:id="@+id/tempin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/tempin"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/tempin" android:textSize="12sp"/>
+                        android:textSize="12sp" />
 
                 <Switch
+                        android:id="@+id/tempout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/tempout"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:textSize="12sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/tempout"/>
+                        android:textSize="12sp" />
 
                 <Switch
+                        android:id="@+id/insolation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/insolation"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:textSize="12sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/insolation"/>
+                        android:textSize="12sp" />
 
                 <Switch
+                        android:id="@+id/windspeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/windspeed"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:textSize="12sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/windspeed"/>
+                        android:textSize="12sp" />
 
                 <Switch
+                        android:id="@+id/airpol10"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
                         android:text="@string/airpollution10"
-                        android:checked="true"
-                        android:textSize="12sp"
+                        android:textSize="12sp" />
+
+                <Switch
+                        android:id="@+id/iconw"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/airpol10"/>
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="@string/weathericon"
+                        android:textSize="12sp" />
             </LinearLayout>
+
             <LinearLayout
-                    android:orientation="vertical"
-                    android:paddingStart="17dp"
-                    android:paddingEnd="8dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+
+                    android:orientation="vertical">
 
                 <Switch
+                        android:id="@+id/humidityin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/humidityin"
-                        android:layout_width="match_parent"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:textSize="12sp"
-                        android:layout_height="wrap_content" android:id="@+id/humidityin"/>
+                        android:textSize="12sp" />
 
                 <Switch
+                        android:id="@+id/humidityout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/humidityout"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:textSize="12sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/humidityout"/>
+                        android:textSize="12sp" />
 
                 <Switch
+                        android:id="@+id/rainfall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/rainfall"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:textSize="12sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/rainfall"/>
+                        android:textSize="12sp" />
 
                 <Switch
+                        android:id="@+id/pressure"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:switchPadding="20dp"
                         android:text="@string/pressure"
-                        android:switchPadding="20dp"
-                        android:checked="true"
-                        android:textSize="12sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/pressure"/>
+                        android:textSize="12sp" />
 
                 <Switch
-                        android:text="@string/airpollution25"
-                        android:checked="true"
-                        android:textSize="12sp"
+                        android:id="@+id/airpol25"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/airpol25"/>
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="@string/airpollution25"
+                        android:textSize="12sp" />
 
             </LinearLayout>
         </LinearLayout>
+
         <LinearLayout
-                android:orientation="vertical"
+                android:id="@+id/preview"
+                android:layout_width="match_parent"
+                android:layout_height="360dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
                 android:background="@drawable/wallpaper"
-                android:layout_width="match_parent"
                 android:gravity="center"
-                android:layout_height="340dp" android:id="@+id/preview"/>
+                android:orientation="vertical"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp" />
         <Button
                 android:text="@string/add_widget"
                 android:layout_marginTop="15dp"

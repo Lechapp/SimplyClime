@@ -1,16 +1,17 @@
 package pl.simplyinc.simplyclime.fragments
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_add_weather.*
 import pl.simplyinc.simplyclime.R
-import pl.simplyinc.simplyclime.activities.AddStationActivity
-import pl.simplyinc.simplyclime.activities.LogInActivity
-import pl.simplyinc.simplyclime.activities.SearchWeatherActivity
+import pl.simplyinc.simplyclime.activities.*
+import pl.simplyinc.simplyclime.elements.OnSwipeTouchListener
 import pl.simplyinc.simplyclime.elements.SessionPref
 
 class AddWeather : Fragment() {
@@ -26,9 +27,20 @@ class AddWeather : Fragment() {
         super.onActivityCreated(savedInstanceState)
         val sessionPref = SessionPref(context!!)
 
+        val act = activity as MainActivity
+        val allstat = sessionPref.getPref("stations").split("|")
+        val listeer = OnSwipeTouchListener(act.applicationContext, null, null, (allstat.size-1).toFloat(), act)
+        containerall.setOnTouchListener(listeer)
+
         addcity.setOnClickListener {
             val addcity = Intent(context, SearchWeatherActivity::class.java)
             startActivity(addcity)
+        }
+
+        howworks.setOnClickListener {
+            val openURL = Intent(Intent.ACTION_VIEW)
+            openURL.data = Uri.parse("https://$server/public")
+            startActivity(openURL)
         }
 
         addstation.setOnClickListener {

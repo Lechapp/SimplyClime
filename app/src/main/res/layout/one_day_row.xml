@@ -17,14 +17,18 @@
             android:id="@+id/dayicon" android:layout_marginTop="24dp"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="24dp" android:visibility="visible"/>
+
     <TextView
-            android:textColor="@color/white"
-            android:text="@string/date"
+            android:id="@+id/dayday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/dayday" android:layout_marginTop="8dp"
-            app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="8dp"/>
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:text="@string/date"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     <TextView
             android:textColor="@color/white"
             android:text="@string/tempout"

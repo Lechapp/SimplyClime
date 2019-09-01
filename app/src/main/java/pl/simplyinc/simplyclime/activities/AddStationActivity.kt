@@ -125,7 +125,7 @@ class AddStationActivity : AppCompatActivity() {
                     session.setPref("forecasts",activeforecast+addedforecast)
 
                     val intent = Intent(applicationContext, MainActivity::class.java)
-                    intent.putExtra("station", true)
+                    intent.putExtra("setweather", activeweather.split("|").size)
                     startActivity(intent)
                 }else{
                     Toast.makeText(this,response.getString("message"), Toast.LENGTH_SHORT).show()

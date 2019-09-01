@@ -9,17 +9,19 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.forecast_row.view.*
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
+import pl.simplyinc.simplyclime.elements.WeatherTools
 import java.text.SimpleDateFormat
 import java.util.*
 
 class ForecastAdapter(val context: Context, val forecast:JSONObject, val tempunit:String):RecyclerView.Adapter<ViewHolder>() {
 
     val time = forecast.getInt("time")
-    val weatherdate = SimpleDateFormat("u|dd", Locale(Locale.getDefault().displayLanguage))
+    private val weatherdate = SimpleDateFormat("u|dd", Locale(Locale.getDefault().displayLanguage))
     val day = weatherdate.format(Date(time*1000L)).split("|")
     var dayofWeek = (day[0]).toInt()
     var dayofMonth = (day[1]).toInt()
-    val lastday = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
+    private val lastday = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
+    val tool = WeatherTools()
 
     override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(context)
@@ -61,7 +63,7 @@ class ForecastAdapter(val context: Context, val forecast:JSONObject, val tempuni
             val dayweather = JSONObject(forecast.getString("day$position"))
             iconweather.setImageResource(dayweather.getInt("weathericon"))
 
-            val tempconvert = dayweather.getString("tempmax") + "/" + dayweather.getString("tempmin") + " $tempunit"
+            val tempconvert = tool.kelvintoTempUnit(dayweather.getString("tempmax"), tempunit)+ "/" + tool.kelvintoTempUnit(dayweather.getString("tempmin"), tempunit) + " $tempunit"
             temp.text = tempconvert
 
         }catch (e:Exception){

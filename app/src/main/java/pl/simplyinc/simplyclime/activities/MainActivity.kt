@@ -6,9 +6,7 @@ import android.os.Bundle
 import com.android.volley.Response
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
-import pl.simplyinc.simplyclime.adapters.PagerAdapter
 import pl.simplyinc.simplyclime.network.VolleySingleton
-import android.support.v4.view.ViewPager.OnPageChangeListener
 import pl.simplyinc.simplyclime.adapters.StationNameAdapter
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
@@ -16,45 +14,68 @@ import com.android.volley.toolbox.StringRequest
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.support.v4.app.Fragment
+import pl.simplyinc.simplyclime.fragments.AddWeather
+import pl.simplyinc.simplyclime.fragments.Weatherinfo
+import pl.simplyinc.simplyclime.widget.NewestWeather
+import kotlin.system.exitProcess
+
 
 const val server = "192.168.1.8/weatherapp"
+const val openWeatherAPIKey = "45dc4902d2e0ef0659fc3e32b9195973"
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var pagerAdapter: PagerAdapter
     lateinit var session:SessionPref
     lateinit var adaptername:StationNameAdapter
+    lateinit var frag:Fragment
     private lateinit var title:ArrayList<String>
+    private val fm = supportFragmentManager
+    var position = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        if(intent.getBooleanExtra("slideanim", false))
+            overridePendingTransition(R.anim.slidein_from_left_to_right, R.anim.activity_slide_out_right)
+
         supportActionBar?.hide()
         session = SessionPref(this)
         setTitleBar()
-        pagerAdapter = PagerAdapter(supportFragmentManager, this)
-        weathers.adapter = pagerAdapter
-
-        checkactiveposition()
 
         checkLogIn()
 
+        updateWidget()
 
-        weathers.addOnPageChangeListener(object : OnPageChangeListener {
-            override fun onPageScrollStateChanged(state: Int) {}
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
-
-            override fun onPageSelected(position: Int) {
-                adaptername.setActive(position)
-            }
-        })
-
+        checkactiveposition()
     }
 
     override fun onBackPressed() {
-        if(!pagerAdapter.hidedaylist(weathers.currentItem))
-            super.onBackPressed()
+        if(position < title.size-1 && ::frag.isInitialized){
+            val weinf = frag as Weatherinfo
+            if(!weinf.hideDayByDay())
+                exitProcess(-1)
+        }else exitProcess(-1)
     }
-    private fun setTitleBar(){
+    fun setWeather(position:Int){
+
+            if (::frag.isInitialized)
+                fm.beginTransaction().remove(frag).commit()
+
+            frag = if (position >= title.size - 1) {
+                adaptername.setActive(position)
+                AddWeather()
+            }else
+                Weatherinfo.newInstance(position)
+
+
+            fm.beginTransaction().add(R.id.container, frag).commit()
+
+    }
+
+    fun setTitleBar(){
         title = arrayListOf()
         val stations = session.getPref("stations").split("|")
 
@@ -67,7 +88,7 @@ class MainActivity : AppCompatActivity() {
 
         title.add(getString(R.string.addcity))
 
-        adaptername = StationNameAdapter(title,this, weathers)
+        adaptername = StationNameAdapter(title,this)
         namerecycler.adapter = adaptername
         namerecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
@@ -97,6 +118,14 @@ class MainActivity : AppCompatActivity() {
         VolleySingleton.getInstance(this).addToRequestQueue(request)
     }
 
+    private fun updateWidget(){
+        val intent = Intent(this, NewestWeather::class.java)
+        intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        val ids = AppWidgetManager.getInstance(application).getAppWidgetIds(ComponentName(application, NewestWeather::class.java))
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        sendBroadcast(intent)
+    }
+
     private fun logOut(){
         session.setPref("token","")
         session.setPref("login","")
@@ -124,26 +153,16 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        pagerAdapter.changeData()
         setTitleBar()
     }
 
 
     private fun checkactiveposition(){
-        if(intent.getBooleanExtra("station", false)){
-            adaptername.setActive(title.size-2)
-            weathers.setCurrentItem(title.size-2,true)
-        }
-        val widgetposition = intent.getIntExtra("fromwidget", -1)
-        if(widgetposition != -1){
-            adaptername.setActive(widgetposition)
-            weathers.setCurrentItem(widgetposition,true)
-        }
-        val weatherposition = intent.getIntExtra("fromsettings", -1)
+        val weatherposition = intent.getIntExtra("setweather", -1)
         if(weatherposition != -1){
-            adaptername.setActive(weatherposition)
-            weathers.setCurrentItem(weatherposition,false)
-        }
+            setWeather(weatherposition)
+            position = weatherposition
+        }else setWeather(position)
     }
 
     private fun checkLogIn(){

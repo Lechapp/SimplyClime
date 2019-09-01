@@ -26,6 +26,7 @@
     <string name="street">Street</string>
     <string name="numberstation">"Weather stations: "</string>
     <string name="emptysearch">No weather stations in this city</string>
+    <string name="wrongcity">City not found</string>
     <string name="flag">Flag</string>
     <string name="downarrow">Down arrow</string>
     <string name="logged">Tap to log out</string>
@@ -59,11 +60,11 @@
     <string name="pressure">Pressure</string>
     <string name="rainfall">Rainfall</string>
     <string name="windspeed">Wind speed</string>
-    <string name="airpollution10">Air pollution PM10</string>
+    <string name="airpollution10">PM10</string>
     <string name="insolation">Insolation</string>
     <string name="baterry">Baterry</string>
     <string name="time">Time</string>
-    <string name="airpollution25">Air pollution PM2.5</string>
+    <string name="airpollution25">PM2.5</string>
     <string name="weathericon">Weather icon</string>
     <string name="tempicon">Temperature icon</string>
     <string name="humicon">Humidity icon</string>
@@ -98,4 +99,24 @@
     <string name="friday">Fri</string>
     <string name="saturday">Sat</string>
     <string name="sunday">Sun</string>
+    <string name="fmonday">Monday</string>
+    <string name="ftuesday">Tuesday</string>
+    <string name="fwednesday">Wednesday</string>
+    <string name="fthursday">Thursday</string>
+    <string name="ffriday">Friday</string>
+    <string name="fsaturday">Saturday</string>
+    <string name="fsunday">Sunday</string>
+    <string name="nextday">Next day</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="infoGPS">" The weather will automatically adapt to the place where you are"</string>
+    <string name="searchiglocation">Searching for your location &#8230;</string>
+    <string name="ok">Okay</string>
+    <string name="choosemanually">Choose city manually</string>
+    <string name="waitfor">I am looking for a location, please wait</string>
+    <string name="sourcedata">Pick up a source of weather data</string>
+    <string name="fromusers">From weather stations belonging to users</string>
+    <string name="fromcloud">From professional weather stations</string>
+    <string name="howitworks">How it works?</string>
+    <string name="exactlocation">Click on flag to see the exact location</string>
 </resources>

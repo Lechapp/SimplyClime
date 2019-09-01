@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.SuperscriptSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,8 +21,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, val station:String, val recyc:RecyclerView,
-                      val forecast:RecyclerView, val pb:ProgressBar, val detail:Boolean): RecyclerView.Adapter<ViewHolder>() {
+class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, val station:String, private val recyc:RecyclerView,
+                      val forecast:RecyclerView, private val pb:ProgressBar, private val detail:Boolean, val onlyforeacst:Boolean = false): RecyclerView.Adapter<ViewHolder>() {
 
     lateinit var tunit:String
     lateinit var wunit:String
@@ -42,7 +41,10 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val w = weather[position]
+        val w = if(onlyforeacst) {
+                weather[weather.size-position-1]
+            }else weather[position]
+
         val tool = WeatherTools()
 
         val showall = holder.itemView.showmore
@@ -73,9 +75,25 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
             else -> "dd.MM"
         }
 
-        val systemtimezone = TimeZone.getDefault().rawOffset + TimeZone.getDefault().dstSavings
-        val weatherdate = SimpleDateFormat(dateformat, Locale(Locale.getDefault().displayLanguage))
-        date.text = weatherdate.format(Date(w.getInt(11)*1000L-systemtimezone))
+        val weatherdate = SimpleDateFormat(dateformat, Locale.getDefault())
+        weatherdate.timeZone = TimeZone.getTimeZone("GMT")
+
+        val dayinweek = SimpleDateFormat("u", Locale.getDefault())
+        dayinweek.timeZone = TimeZone.getTimeZone("GMT")
+        val day = dayinweek.format(Date(w.getInt(11)*1000L))
+
+        val dayOfWeek = when (day) {
+            "1" -> context.getString(R.string.fmonday)
+            "2" -> context.getString(R.string.ftuesday)
+            "3" -> context.getString(R.string.fwednesday)
+            "4" -> context.getString(R.string.fthursday)
+            "5" -> context.getString(R.string.ffriday)
+            "6" -> context.getString(R.string.fsaturday)
+            "7" -> context.getString(R.string.fsunday)
+            else -> context.getString(R.string.nextday)
+        }
+        val alldate = "${weatherdate.format(Date(w.getInt(11)*1000L))}, $dayOfWeek"
+        date.text = alldate
 
         if(w.getString(10) != "null"){
             val img = tool.batterylvl(w.getString(10), true)
@@ -108,15 +126,19 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
 
         if(w.getString(2) != "null" || w.getString(3) != "null"){
 
-            if(w.getString(2) != "null") {
-                val t = context.getString(R.string.out) + " " + tool.roundto(w.getString(2)) + "%"
-                humiout.text = t
-            }else humiout.visibility = View.GONE
-
+            var out = ""
             if(w.getString(3) != "null") {
                 val t =  context.getString(R.string.`in`)+ " " + tool.roundto(w.getString(3)) + "%"
                 humiin.text = t
+                out = context.getString(R.string.out)
             }else humiin.visibility = View.GONE
+
+            if(w.getString(2) != "null") {
+                val t = out + " " + tool.roundto(w.getString(2)) + "%"
+                humiout.text = t
+            }else humiout.visibility = View.GONE
+
+
 
         }else allhumi.visibility = View.GONE
 
@@ -149,13 +171,13 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
                 airpol10.text = builder
-                val colorid = tool.PM10(w.getString(7))
+                val colorid = tool.pm10(w.getString(7))
                 airpol10.background = ContextCompat.getDrawable(context,colorid)
             }else airpol10.visibility = View.GONE
 
             if(w.getString(8) != "null") {
 
-                val colorid = tool.PM25(w.getString(8))
+                val colorid = tool.pm25(w.getString(8))
                 airpol25.background = ContextCompat.getDrawable(context,colorid)
                 val indexgorny = tool.roundto(w.getString(8)) + " " + context.getString(R.string.pollutionuit)
 
@@ -183,15 +205,26 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
             else -> w.getString(13)
         })
 
-        val iconimg = tool.weathericon(temp, tool.roundto(w.getString(5)), tool.roundto(w.getString(9)),
-            st.getInt("sunrise"),st.getInt("sunset"), st.getInt("timezone"), true)
+        val iconimg = if(onlyforeacst){
+            tool.weatherIconOpenWeather(
+                w.getString(14),
+                w.getString(15),
+                0,0,0,
+                true, w.getString(5))
+        } else {
+            tool.weathericon(
+                temp, tool.roundto(w.getString(5)), tool.roundto(w.getString(9)),
+                0, 0, 0, true
+            )
+        }
         icon.setImageResource(iconimg)
 
         if(!detail) {
             showall.setOnClickListener {
                 val dayByDayRequest = DayByDayRequest()
-                val dateto = SimpleDateFormat("dd-MM-yyyy", Locale(Locale.getDefault().displayLanguage))
-                val dateinformatto = dateto.format(Date(w.getInt(11) * 1000L - systemtimezone))
+                val dateto = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                dateto.timeZone = TimeZone.getTimeZone("GMT")
+                val dateinformatto = dateto.format(Date(w.getInt(11) * 1000L))
 
                 dayByDayRequest.getWeather(context, station, recyc, forecast, pb, "0", dateinformatto)
                 forecast.visibility = View.GONE

@@ -188,14 +188,15 @@
                 android:gravity="end|center_vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
             <ImageView
+                    android:id="@+id/weathericon"
                     android:layout_width="80dp"
-                    android:layout_marginEnd="30dp"
-                    android:contentDescription="@string/weathericon"
-                    android:layout_height="80dp" android:id="@+id/weathericon"
+                    android:layout_height="80dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="35dp"
                     android:background="@drawable/cloud_sun_b"
-                    android:layout_marginTop="14dp"
-            />
+                    android:contentDescription="@string/weathericon" />
         </LinearLayout>
 
     </LinearLayout>
@@ -204,46 +205,59 @@
             android:layout_marginTop="3dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/allpolition">
+
         <TextView
-                android:text="@string/airpollution"
+                android:id="@+id/airpollution"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
                 android:paddingStart="10dp"
                 android:paddingEnd="5dp"
-                android:gravity="center"
+                android:text="@string/airpollution"
                 android:textColor="@color/blackfont"
-                android:layout_height="wrap_content" android:id="@+id/airpollution"
-                android:textSize="12sp"/>
+                android:textSize="12sp" />
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
+
             <TextView
-                    android:text="@string/airpollution10"
+                    android:id="@+id/airpol10"
                     android:layout_width="wrap_content"
-                    android:gravity="center"
-                    android:background="@color/good"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="2dp"
-                    android:textColor="@color/white"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
-                    android:layout_height="wrap_content" android:id="@+id/airpol10"
-                    android:textSize="11sp"/>
-            <TextView
-                    android:text="@string/airpollution25"
-                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/good"
                     android:gravity="center"
                     android:paddingStart="4dp"
-                    android:background="@color/verygood"
-                    android:paddingEnd="4dp"
                     android:paddingTop="2dp"
+                    android:paddingEnd="4dp"
                     android:paddingBottom="2dp"
+                    android:text="@string/airpollution10"
                     android:textColor="@color/white"
+                    android:textSize="11sp" />
+
+            <TextView
+                    android:id="@+id/airpol25"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:layout_height="wrap_content" android:id="@+id/airpol25"
-                    android:textSize="11sp"/>
+                    android:layout_weight="1"
+                    android:background="@color/verygood"
+                    android:gravity="center"
+                    android:paddingStart="4dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="4dp"
+                    android:paddingBottom="2dp"
+                    android:text="@string/airpollution25"
+                    android:textColor="@color/white"
+                    android:textSize="11sp" />
         </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
     <LinearLayout
             android:orientation="horizontal"

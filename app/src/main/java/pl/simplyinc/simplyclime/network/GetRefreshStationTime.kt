@@ -12,7 +12,7 @@ import pl.simplyinc.simplyclime.elements.SessionPref
 
 class GetRefreshStationTime(val session:SessionPref, val station:String) {
 
-    fun getNewestSunset(context: Context, stationid:String) {
+    fun getNewestRefreshTime(context: Context, stationid:String) {
 
         val url = "http://$server/api/station/refreshtime/$stationid"
 

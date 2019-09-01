@@ -23,19 +23,25 @@ import android.text.Spanned
 import android.text.SpannableStringBuilder
 import android.text.style.SuperscriptSpan
 import android.util.Log
-import android.widget.ImageView
-import android.widget.TextView
+import pl.simplyinc.simplyclime.activities.openWeatherAPIKey
 
 
-class WidgetWeatherRequest {
+class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidgetManager, private val appWidgetId: Int,
+                                private val s:JSONObject, private val widgetinfo:JSONObject, private var f:JSONObject) {
 
    private val tool = WeatherTools()
+    var tempunit = "°C"
+    var windunit = "km/h"
 
-    fun getNewestWeatherWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, weatherOld:String, station:JSONObject, widgetinfo:JSONObject,f:JSONObject) {
-        val tempunit = station.getString("tempunit")
-        val windunit = station.getString("windunit")
-        val searchvalue = station.getString("searchvalue")
-        val url = "http://$server/api/weather/$searchvalue?newest=true"
+    fun getNewestWeatherWidget(weatherOld:String, lat:String = "", lon:String = "", forecast:JSONObject? = null) {
+        if(forecast!= null)
+            f = forecast
+
+        tempunit = s.getString("tempunit")
+        windunit = s.getString("windunit")
+        val searchvalue = s.getString("searchvalue")
+        val url = "http://$server/api/weather/$searchvalue?newest=true&gps=${s.getString("gps")}&lat=$lat&long=$lon"
+
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 
@@ -44,50 +50,112 @@ class WidgetWeatherRequest {
                 val w = response.getJSONArray("weather").getJSONArray(0)
                 val unixTime = (System.currentTimeMillis() / 1000L).toDouble().roundToInt()
                 val tempimg = tool.getTempImgId(w.getString(0), widgetinfo.getBoolean("blackbg"))
-                val tempin = tool.kelvintoTempUnit(w.getString(1), tempunit)
-                val tempout = tool.kelvintoTempUnit(w.getString(0), tempunit)
-                val wind = tool.mstoWindUnit(w.getString(6), windunit)
                 val humiout = tool.roundto(w.getString(2))
                 val humiin = tool.roundto(w.getString(3))
                 val insolation = tool.roundto(w.getString(9))
                 val rainfall = tool.roundto(w.getString(5))
 
-                val newW = WeatherData(tempout,tempin,humiout,humiin, w.getString(4),rainfall,
-                    wind,w.getString(7),w.getString(8), insolation,w.getString(10),
+                val newW = WeatherData(w.getString(0),w.getString(1),humiout,humiin, tool.roundto(w.getString(4)),rainfall,
+                    w.getString(6),w.getString(7),w.getString(8), insolation,w.getString(10),
                     w.getInt(11),unixTime, tempimg)
 
                 val json = Json(JsonConfiguration.Stable)
                 val newweather = json.stringify(WeatherData.serializer(), newW)
-                val session = SessionPref(context)
-                val allnewweathers = session.getPref("weathers").replace(weatherOld,newweather)
-                session.setPref("weathers", allnewweathers)
 
-                setWidget(context, appWidgetManager, appWidgetId, newweather, station, widgetinfo, f, false)
+                saveWeather(weatherOld,newweather)
+
+                setWidget(newweather, false)
             }else{
-                setWidget(context, appWidgetManager, appWidgetId, "", station, widgetinfo, f, true)
+                setWidget(weatherOld, false)
             }
 
         },
             Response.ErrorListener {
-
+                setWidget(weatherOld, true)
             })
 
-        VolleySingleton.getInstance(context).addToRequestQueue(request)
+        VolleySingleton.getInstance(c).addToRequestQueue(request)
     }
 
-    fun setWidget(c: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, weather:String, s:JSONObject,
-                  widgetinfo:JSONObject, f:JSONObject, error:Boolean):Boolean{
+    fun getNewestWeatherWidgetOpenWeather(weatherOld: String, lat:String = "", lon:String = "", forecast: JSONObject? = null) {
+        if(forecast!= null)
+            f = forecast
+
+        val searchvalue = if(lat != "") {
+            "lat=$lat&lon=$lon"
+        }else {
+            "id="+s.getString("searchvalue")
+        }
+        val url = "https://api.openweathermap.org/data/2.5/weather?$searchvalue&appid=$openWeatherAPIKey"
+
+        val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
+
+            val response = JSONObject(res)
+            if (response.getString("cod") == "200") {
+                val w = response.getJSONObject("main")
+                val wind = response.getJSONObject("wind")
+                val unixTime = (System.currentTimeMillis() / 1000L).toDouble().roundToInt()
+
+                val main = response.getJSONArray("weather").getJSONObject(0).getString("main")
+                val description = response.getJSONArray("weather").getJSONObject(0).getString("description")
+                val tempout = tool.roundto(w.getString("temp"))
+                val tempimg = tool.getTempImgId(tempout, true)
+                val humiout = w.getString("humidity")
+                val pressure = tool.roundto(w.getString("pressure"))
+                val time = response.getInt("dt") + response.getInt("timezone")
+                val json = Json(JsonConfiguration.Stable)
+
+                val newW = WeatherData(tempout,"null",humiout,"null", pressure,"null",
+                    wind.getString("speed"),"null","null", "null","null",
+                    time,unixTime, tempimg,description, main)
+
+
+                val newweather = json.stringify(WeatherData.serializer(), newW)
+
+                saveWeather(weatherOld, newweather)
+
+
+                setWidget(newweather, false)
+            }else{
+                setWidget(weatherOld, false)
+            }
+        },
+            Response.ErrorListener {
+                setWidget(weatherOld, true)
+            })
+
+        VolleySingleton.getInstance(c).addToRequestQueue(request)
+    }
+    private fun saveWeather(weatherOld: String, newweather:String){
+        val session = SessionPref(c)
+        val allnewweathers = session.getPref("weathers").replace(weatherOld,newweather)
+        session.setPref("weathers", allnewweathers)
+    }
+
+    fun setWidget(weather:String, error:Boolean, newforecast:JSONObject = f):Boolean{
 
         val views = RemoteViews(c.packageName, R.layout.newest_weather)
         //s in argument is station data
         views.setTextViewText(R.id.title, s.getString("title"))
         val black = if(widgetinfo.getBoolean("blackbg")) "weathericon" else "weathericonblack"
-        setForecast(views,f,c, s.getString("tempunit"), black)
+        setForecast(views,newforecast,c, s.getString("tempunit"), black)
 
         if(error) {
             views.setViewVisibility(R.id.battery, View.GONE)
             views.setViewVisibility(R.id.batteryimg, View.GONE)
             views.setViewVisibility(R.id.datalayout, View.GONE)
+            views.setViewVisibility(R.id.allhumidity,View.GONE)
+            views.setViewVisibility(R.id.alltemp,View.GONE)
+            views.setViewVisibility(R.id.pressure, View.GONE)
+            views.setViewVisibility(R.id.rainfall, View.GONE)
+            views.setViewVisibility(R.id.allpolition,View.GONE)
+            views.setViewVisibility(R.id.weathericon,View.GONE)
+            views.setViewVisibility(R.id.rainfallimg, View.GONE)
+            views.setViewVisibility(R.id.pressureimg, View.GONE)
+            views.setViewVisibility(R.id.windspeed, View.GONE)
+            views.setViewVisibility(R.id.windspeedimg, View.GONE)
+            views.setViewVisibility(R.id.insolation, View.GONE)
+            views.setViewVisibility(R.id.insolationimg, View.GONE)
             views.setViewVisibility(R.id.updatelayout, View.GONE)
             views.setViewVisibility(R.id.errortext, View.VISIBLE)
 
@@ -105,8 +173,9 @@ class WidgetWeatherRequest {
 
 
         val w = JSONObject(weather)
-        val sdf = SimpleDateFormat("HH:mm", Locale(Locale.getDefault().displayLanguage))
-        val lastdat = SimpleDateFormat("dd.MM HH:mm", Locale(Locale.getDefault().displayLanguage))
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val lastdat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
+        lastdat.timeZone = TimeZone.getTimeZone("GMT")
         val update = Date(w.getLong("updatedtime")*1000L)
         val datafrom = Date(w.getLong("time")*1000L)
         val text = c.getString(R.string.lastupdate) + " " + lastdat.format(datafrom) + ". " + c.getString(R.string.updated) +" "+ sdf.format(update)
@@ -118,14 +187,16 @@ class WidgetWeatherRequest {
             || (w.getString("tempin") != "null" && widgetinfo.getBoolean("tempin"))){
 
             if(w.getString("tempin") != "null" && widgetinfo.getBoolean("tempin")) {
+                val temp = tool.kelvintoTempUnit(w.getString("tempin"), tempunit)
                 views.setTextViewText(R.id.tempin,
-                    c.getString(R.string.`in`) + " " + w.getString("tempin") + s.getString("tempunit"))
+                    c.getString(R.string.`in`) + " " + temp + s.getString("tempunit"))
                 out = c.getString(R.string.out)
             }else views.setViewVisibility(R.id.tempin, View.GONE)
 
             if(w.getString("tempout") != "null" && widgetinfo.getBoolean("tempout")){
+                val temp = tool.kelvintoTempUnit(w.getString("tempout"), tempunit)
                 views.setTextViewText(R.id.tempout,
-                    out+" "+w.getString("tempout")+s.getString("tempunit"))
+                    out+" "+ temp +s.getString("tempunit"))
 
                 views.setInt(R.id.tempimage, "setBackgroundResource", w.getInt("tempimg"))
             }else views.setViewVisibility(R.id.tempout, View.GONE)
@@ -184,9 +255,13 @@ class WidgetWeatherRequest {
         }
 
         //windspeed
-        if(w.getString("windspeed") != "null" && widgetinfo.getBoolean("windspeed"))
-            views.setTextViewText(R.id.windspeed, w.getString("windspeed") + s.getString("windunit"))
-        else {
+        if(w.getString("windspeed") != "null" && widgetinfo.getBoolean("windspeed")) {
+            val wind = tool.mstoWindUnit(w.getString("windspeed"), windunit)
+            views.setTextViewText(
+                R.id.windspeed,
+                wind + s.getString("windunit")
+            )
+        }else {
             views.setViewVisibility(R.id.windspeed, View.GONE)
             views.setViewVisibility(R.id.windspeedimg, View.GONE)
         }
@@ -209,7 +284,7 @@ class WidgetWeatherRequest {
 
             if(w.getString("airpollution10") != "null" && widgetinfo.getBoolean("airpollution10")) {
 
-                indexgorny = "PM10  " + w.getString("airpollution10") +" "+ c.getString(R.string.pollutionuit)
+                indexgorny = "pm10  " + w.getString("airpollution10") +" "+ c.getString(R.string.pollutionuit)
                 val superscriptSpan = SuperscriptSpan()
                 val builder = SpannableStringBuilder(indexgorny)
                 builder.setSpan(
@@ -220,7 +295,7 @@ class WidgetWeatherRequest {
 
                 views.setTextViewText(R.id.airpol10, builder)
 
-                val colorid = tool.PM10(w.getString("airpollution10"))
+                val colorid = tool.pm10(w.getString("airpollution10"))
                 views.setInt(R.id.airpol10, "setBackgroundResource",colorid)
             } else views.setViewVisibility(R.id.airpol10, View.GONE)
 
@@ -237,7 +312,7 @@ class WidgetWeatherRequest {
 
                 views.setTextViewText(R.id.airpol25, builder)
 
-                val colorid = tool.PM25(w.getString("airpollution25"))
+                val colorid = tool.pm25(w.getString("airpollution25"))
                 views.setInt(R.id.airpol25, "setBackgroundResource",colorid)
             }
             else views.setViewVisibility(R.id.airpol25, View.GONE)
@@ -246,10 +321,18 @@ class WidgetWeatherRequest {
         }
 
         //weatherimg
-        val weatherimg = tool.weathericon(w.getString("tempout"), w.getString("rainfall"), w.getString("insolation"),
-                                        s.getInt("sunrise"), s.getInt("sunset"), s.getInt("timezone"), widgetinfo.getBoolean("blackbg"))
-        views.setInt(R.id.weathericon, "setBackgroundResource", weatherimg)
-
+        if(widgetinfo.getBoolean("icon")) {
+            val weatherimg = tool.weathericon(
+                w.getString("tempout"),
+                w.getString("rainfall"),
+                w.getString("insolation"),
+                s.getInt("sunrise"),
+                s.getInt("sunset"),
+                s.getInt("timezone"),
+                widgetinfo.getBoolean("blackbg")
+            )
+            views.setInt(R.id.weathericon, "setBackgroundResource", weatherimg)
+        }else views.setViewVisibility(R.id.weathericon, View.GONE)
 
         //setTheme
         views.setInt(R.id.widget, "setBackgroundColor", widgetinfo.getInt("background"))
@@ -285,7 +368,6 @@ class WidgetWeatherRequest {
             views.setTextColor(R.id.forecasttemp5,white)
             views.setTextColor(R.id.updatedat,ContextCompat.getColor(c, R.color.whitesmoke))
         }else views.setInt(R.id.tempimage, "setBackgroundResource", R.drawable.temp2_b)
-
         appWidgetManager.updateAppWidget(appWidgetId, views)
         return true
 
@@ -325,7 +407,7 @@ class WidgetWeatherRequest {
 
 
         for(i in 0 until f.length()-1){
-            var dayone = JSONObject()
+            val dayone: JSONObject
             try {
                 dayone = JSONObject(f.getString("day$i"))
             }catch (e:Exception){
@@ -344,7 +426,9 @@ class WidgetWeatherRequest {
             }
 
             v.setInt(arrayimg[i], "setBackgroundResource",dayone.getInt(blacktheme))
-            v.setTextViewText(arraytemp[i],dayone.getString("tempmax")+"/"+dayone.getString("tempmin")+ tempunit)
+            v.setTextViewText(arraytemp[i],tool.kelvintoTempUnit(dayone.getString("tempmax"),tempunit)
+                    +"/"
+                    +tool.kelvintoTempUnit(dayone.getString("tempmin"), tempunit) + tempunit)
             v.setTextViewText(arraydate[i],"$dayofWeekText $dayofMonth")
 
             dayofWeek++

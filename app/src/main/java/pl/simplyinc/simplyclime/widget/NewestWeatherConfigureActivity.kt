@@ -24,6 +24,16 @@ import kotlinx.serialization.json.JsonConfiguration
 import pl.simplyinc.simplyclime.elements.WidgetData
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.newest_weather.view.*
+import kotlinx.android.synthetic.main.newest_weather.view.airpol10
+import kotlinx.android.synthetic.main.newest_weather.view.airpol25
+import kotlinx.android.synthetic.main.newest_weather.view.humidityin
+import kotlinx.android.synthetic.main.newest_weather.view.humidityout
+import kotlinx.android.synthetic.main.newest_weather.view.insolation
+import kotlinx.android.synthetic.main.newest_weather.view.pressure
+import kotlinx.android.synthetic.main.newest_weather.view.rainfall
+import kotlinx.android.synthetic.main.newest_weather.view.tempin
+import kotlinx.android.synthetic.main.newest_weather.view.tempout
+import kotlinx.android.synthetic.main.newest_weather.view.windspeed
 
 
 class NewestWeatherConfigureActivity : Activity() {
@@ -33,8 +43,8 @@ class NewestWeatherConfigureActivity : Activity() {
     private lateinit var title:ArrayList<String>
     var choosedPlace = -1
     var transparency = 70
-    var darktheme = false
-    val visibilityelement = HashMap<String,Boolean>()
+    private var darktheme = false
+    private val visibilityelement = HashMap<String,Boolean>()
     private lateinit var widgetlayout: View
 
     public override fun onCreate(icicle: Bundle?) {
@@ -83,7 +93,8 @@ class NewestWeatherConfigureActivity : Activity() {
                     val widget = WidgetData(choosedPlace,Color.parseColor(color), darktheme, visibilityelement["tempout"]!!,
                         visibilityelement["tempin"]!!, visibilityelement["humidityout"]!!, visibilityelement["humidityin"]!!,
                         visibilityelement["pressure"]!!, visibilityelement["rainfall"]!!, visibilityelement["windspeed"]!!,
-                        visibilityelement["airpollution10"]!!, visibilityelement["airpollution25"]!!, visibilityelement["insolation"]!!)
+                        visibilityelement["airpollution10"]!!, visibilityelement["airpollution25"]!!,
+                        visibilityelement["insolation"]!!, visibilityelement["iconw"]!!)
 
                     val json = Json(JsonConfiguration.Stable)
                     val newwidget = json.stringify(WidgetData.serializer(), widget)
@@ -249,7 +260,15 @@ class NewestWeatherConfigureActivity : Activity() {
         visibilityelement["pressure"] = true
         visibilityelement["airpollution10"] = true
         visibilityelement["airpollution25"] = true
+        visibilityelement["iconw"] = true
 
+
+        iconw.setOnCheckedChangeListener { _, isChecked ->
+            visibilityelement["iconw"] = isChecked
+            if(isChecked){
+                widgetlayout.weathericon.visibility = View.VISIBLE
+            }else widgetlayout.weathericon.visibility = View.GONE
+        }
         tempin.setOnCheckedChangeListener { _, isChecked ->
             visibilityelement["tempin"] = isChecked
             visibleofitems("temp")
@@ -293,7 +312,8 @@ class NewestWeatherConfigureActivity : Activity() {
             }else{
                 widgetlayout.rainfall.visibility = View.GONE
                 widgetlayout.rainfallimg.visibility = View.GONE
-            }        }
+            }
+        }
         windspeed.setOnCheckedChangeListener { _, isChecked ->
             visibilityelement["windspeed"] = isChecked
             if(isChecked){
@@ -302,7 +322,8 @@ class NewestWeatherConfigureActivity : Activity() {
             }else{
                 widgetlayout.windspeed.visibility = View.GONE
                 widgetlayout.windspeedimg.visibility = View.GONE
-            }        }
+            }
+        }
         pressure.setOnCheckedChangeListener { _, isChecked ->
             visibilityelement["pressure"] = isChecked
             if(isChecked){

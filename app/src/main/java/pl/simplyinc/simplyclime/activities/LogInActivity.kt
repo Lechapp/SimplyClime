@@ -18,6 +18,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonConfiguration
+import pl.simplyinc.simplyclime.elements.ForecastData
 import pl.simplyinc.simplyclime.elements.StationsData
 import pl.simplyinc.simplyclime.elements.WeatherData
 
@@ -70,6 +71,7 @@ class LogInActivity : AppCompatActivity() {
                     session.setPref("token", response.getString("token"))
                     val st = StringBuilder()
                     val wh = StringBuilder()
+                    val fc = StringBuilder()
                     val json = Json(JsonConfiguration.Stable)
 
                     val weatherstations = response.getJSONObject("weatherstations")
@@ -87,14 +89,20 @@ class LogInActivity : AppCompatActivity() {
 
                         val weather = WeatherData()
                         wh.append(json.stringify(WeatherData.serializer(), weather)).append("|")
+
+                        val forecast = ForecastData()
+                        fc.append(json.stringify(ForecastData.serializer(), forecast)).append("|")
+
                     }
 
                     val activestation = session.getPref("stations")
                     val activeweather = session.getPref("weathers")
+                    val activeforecast = session.getPref("forecasts")
 
 
                     session.setPref("stations",activestation+st)
                     session.setPref("weathers",activeweather+wh)
+                    session.setPref("forecasts",activeforecast+fc)
 
                     startActivity(intentt)
                     finish()

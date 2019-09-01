@@ -18,7 +18,7 @@ import pl.simplyinc.simplyclime.elements.StationsData
 import pl.simplyinc.simplyclime.elements.WeatherData
 
 
-class SearchStreetAdapter(val context:Context, val liststations:JSONArray, val city:String): RecyclerView.Adapter<ViewHolder>() {
+class SearchStreetAdapter(val context:Context,private val liststations:JSONArray, val city:String): RecyclerView.Adapter<ViewHolder>() {
 
     private val session = SessionPref(context)
 
@@ -62,7 +62,7 @@ class SearchStreetAdapter(val context:Context, val liststations:JSONArray, val c
                 session.setPref("forecasts", activeforecasts + addedforecast)
 
                 val intent = Intent(context, MainActivity::class.java)
-                intent.putExtra("station", true)
+                intent.putExtra("setweather", activeweathers.split("|").size)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
             }

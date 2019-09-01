@@ -2,7 +2,6 @@ package pl.simplyinc.simplyclime.network
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.widget.Toast
 import com.android.volley.Request
 import com.android.volley.Response
@@ -11,23 +10,23 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
+import pl.simplyinc.simplyclime.activities.openWeatherAPIKey
 import pl.simplyinc.simplyclime.adapters.ForecastAdapter
 import pl.simplyinc.simplyclime.elements.ForecastData
 import pl.simplyinc.simplyclime.elements.OneDayForecast
 import pl.simplyinc.simplyclime.elements.SessionPref
-import pl.simplyinc.simplyclime.elements.WeatherTools
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
-class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
+class ForecastRequest(val context: Context, private val pos:Int, val tempunit:String = "", val widget:Boolean = false) {
 
 
-    fun getNewestForecast(city:String, forecastRecycler:RecyclerView) {
+    fun getNewestForecast(city:String, forecastRecycler:RecyclerView? = null, onSuccess : (forecast:JSONObject) -> Unit) {
 
-        val url = "https://api.openweathermap.org/data/2.5/forecast?q=$city&appid=45dc4902d2e0ef0659fc3e32b9195973"
+        val url = "https://api.openweathermap.org/data/2.5/forecast?$city&appid=$openWeatherAPIKey"
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 
@@ -51,9 +50,8 @@ class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
                 var time:Int
                 var day:String
                 var licznik = 0
-                var arrayiconOpenWeather = arrayListOf(0,0,0,0,0,0,0)
+                var arrayiconOpenWeather = arrayListOf(0,0,0,0,0,0,0,0,0)
                 val json = Json(JsonConfiguration.Stable)
-                val tool = WeatherTools()
 
                 for(i in 0 until weathers.length()){
                     licznik++
@@ -77,16 +75,15 @@ class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
 
                     if(tempmax < maxweather)
                         tempmax = maxweather
-                    val idimg = icon[0] +""+ icon[1]
 
-                    when(idimg){
+                    when("${icon[0]}${icon[1]}"){
                         "01"-> arrayiconOpenWeather[0]++
                         "02"-> arrayiconOpenWeather[1]++
-                        "03"-> arrayiconOpenWeather[2]++
-                        "04"-> arrayiconOpenWeather[3]++
-                        "09"-> arrayiconOpenWeather[4]++
-                        "10"-> arrayiconOpenWeather[5]++
-                        "13"-> arrayiconOpenWeather[6]++
+                        "03"-> arrayiconOpenWeather[3]++
+                        "04"-> arrayiconOpenWeather[4]++
+                        "09"-> arrayiconOpenWeather[7]++
+                        "10"-> arrayiconOpenWeather[6]++
+                        "13"-> arrayiconOpenWeather[8]++
                         else -> arrayiconOpenWeather[3]++
                     }
 
@@ -95,18 +92,19 @@ class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
 
                     if(oneday != day) {
                         oneday = day
+                            arrayiconOpenWeather[5] = arrayiconOpenWeather[1] + arrayiconOpenWeather[3] + arrayiconOpenWeather[4]
+                            arrayiconOpenWeather[2] = arrayiconOpenWeather[0] + arrayiconOpenWeather[1]
 
                             iconid = getIcon(arrayiconOpenWeather)
-                            arrayiconOpenWeather = arrayListOf(0,0,0,0,0,0,0)
+                            arrayiconOpenWeather = arrayListOf(0,0,0,0,0,0,0,0,0)
 
-                            val dayObject = OneDayForecast(tool.kelvintoTempUnit(tempmin.toString(), tempunit).toInt(),
-                                tool.kelvintoTempUnit(tempmax.toString(), tempunit).toInt(), iconid[0], iconid[1])
+                            val dayObject = OneDayForecast(tempmin, tempmax, iconid[0], iconid[1])
 
                             val addday = json.stringify(OneDayForecast.serializer(), dayObject)
                             tempmin = 999
                             tempmax = 0
 
-                            if(licznik > 3)
+                            if(licznik > 4)
                                 nextdays.add(addday)
                             else
                                 firsttime = 0
@@ -117,10 +115,10 @@ class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
                     }
 
                 }
-
+                arrayiconOpenWeather[5] = arrayiconOpenWeather[1] + arrayiconOpenWeather[3] + arrayiconOpenWeather[4]
+                arrayiconOpenWeather[2] = arrayiconOpenWeather[0] + arrayiconOpenWeather[1]
                 iconid = getIcon(arrayiconOpenWeather)
-                val dayObject = OneDayForecast(tool.kelvintoTempUnit(tempmin.toString(), tempunit).toInt(),
-                    tool.kelvintoTempUnit(tempmax.toString(), tempunit).toInt(), iconid[0], iconid[1])
+                val dayObject = OneDayForecast(tempmin, tempmax, iconid[0], iconid[1])
                 val addday = json.stringify(OneDayForecast.serializer(), dayObject)
                 nextdays.add(addday)
 
@@ -128,8 +126,10 @@ class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
                     nextdays.add("")
 
                 val forecast = ForecastData(firsttime.plus(timezone), nextdays[0], nextdays[1], nextdays[2], nextdays[3], nextdays[4])
-                saveNewForecast(forecast, forecastRecycler)
+                val newforecast = json.stringify(ForecastData.serializer(), forecast)
+                saveNewForecast(newforecast, forecastRecycler)
 
+                onSuccess(JSONObject(newforecast))
             }
 
         },
@@ -140,19 +140,22 @@ class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
         VolleySingleton.getInstance(context).addToRequestQueue(request)
     }
 
-    private fun saveNewForecast(forecast:ForecastData, forecastRecycler: RecyclerView){
-        val json = Json(JsonConfiguration.Stable)
-        val newforecast = json.stringify(ForecastData.serializer(), forecast)
+    private fun saveNewForecast(newforecast:String, forecastRecycler: RecyclerView?){
         val session = SessionPref(context)
         val active = session.getPref("forecasts").split("|").toMutableList()
         active[pos] = newforecast
         val allnew = active.joinToString("|")
         session.setPref("forecasts", allnew)
-        forecastRecycler.adapter = ForecastAdapter(context, JSONObject(newforecast), tempunit)
+
+        if(!widget)
+            forecastRecycler?.adapter = ForecastAdapter(context, JSONObject(newforecast), tempunit)
     }
 
     private fun getIcon(arrayIcon:ArrayList<Int>):List<Int>{
         //0 - sun, 1 - little_cloud_sun, 2 - cloud_sun, 3 - cloud, 4 - cloud_rain, 5 - cloud_little_rain, 6 - cloud_snow
+
+        //5 suma wszystkich chmur
+        //2 suma slonca i slonca z chmurką małą
 
         val maxValue = arrayIcon.max()
         val allmaxs = ArrayList<Int>()
@@ -161,17 +164,17 @@ class ForecastRequest(val context: Context, val pos:Int, val tempunit:String) {
             arrayIcon[arrayIcon.indexOf(maxValue)] = 0
         }
 
-        val icon = if(allmaxs.size > 1) ((allmaxs[0] + allmaxs[1])/2.0).roundToInt() else allmaxs[0]
+        val icon = if(allmaxs.size > 1) ((allmaxs[0] + allmaxs[1] - 0.01)/2.0).roundToInt() else allmaxs[0]
 
 
         return when(icon){
             0 -> listOf(R.drawable.sun_w, R.drawable.sun_b)
-            1 -> listOf(R.drawable.little_cloud_sun_w, R.drawable.little_cloud_sun_b)
-            2 -> listOf(R.drawable.cloud_sun_w, R.drawable.cloud_sun_b)
-            3 -> listOf(R.drawable.cloud_w, R.drawable.cloud_b)
-            4 -> listOf(R.drawable.cloud_rain_w, R.drawable.cloud_rain_b)
-            5 -> listOf(R.drawable.cloud_little_rain_w, R.drawable.cloud_little_rain_b)
-            6 -> listOf(R.drawable.cloud_snow_w, R.drawable.cloud_snow_b)
+            1,2 -> listOf(R.drawable.little_cloud_sun_w, R.drawable.little_cloud_sun_b)
+            3 -> listOf(R.drawable.cloud_sun_w, R.drawable.cloud_sun_b)
+            4,5 -> listOf(R.drawable.cloud_w, R.drawable.cloud_b)
+            6 -> listOf(R.drawable.cloud_little_rain_w, R.drawable.cloud_little_rain_b)
+            7 -> listOf(R.drawable.cloud_rain_w, R.drawable.cloud_rain_b)
+            8 -> listOf(R.drawable.cloud_snow_w, R.drawable.cloud_snow_b)
             else -> listOf(R.drawable.cloud_w, R.drawable.cloud_b)
         }
 

@@ -18,7 +18,7 @@ import pl.simplyinc.simplyclime.adapters.DayByDayAdapter
 
 class DayByDayRequest {
 
-    private val cacheWeatherData = mutableListOf<JSONArray>()
+    private var cacheWeatherData = mutableListOf<JSONArray>()
     private lateinit var adapt:DayByDayAdapter
     var busy = false
 
@@ -28,8 +28,6 @@ class DayByDayRequest {
         val stationData = JSONObject(station)
 
         if(offset == "null") {
-            forecast.adapter
-
             if (cacheWeatherData.size > 0) {
                 recycler.adapter = DayByDayAdapter(context, cacheWeatherData, station, recycler, forecast, prog, false)
                 return true

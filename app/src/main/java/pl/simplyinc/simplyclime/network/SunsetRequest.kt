@@ -11,6 +11,7 @@ import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
+import pl.simplyinc.simplyclime.activities.openWeatherAPIKey
 import pl.simplyinc.simplyclime.elements.CircularProgressBar
 import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
@@ -22,7 +23,7 @@ class SunsetRequest {
 
     fun getNewestSunset(context: Context, city:String, pos:Int,day:CircularProgressBar, night:CircularProgressBar, sset:TextView, srise:TextView) {
 
-        val url = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=45dc4902d2e0ef0659fc3e32b9195973"
+        val url = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$openWeatherAPIKey"
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 
@@ -32,8 +33,9 @@ class SunsetRequest {
                     try {
                         val timezone = response.getInt("timezone")
                         val data = response.getJSONObject("sys")
-                        val sunrise = data.getInt("sunrise")+timezone
-                        val sunset = data.getInt("sunset")+timezone
+                        val sunrise = data.getInt("sunrise")
+                        val sunset = data.getInt("sunset")
+
                         setDayProgress(day,night, sset, srise, sunset, sunrise, timezone)
                         saveSunset(context,sunset,sunrise,pos)
 
@@ -63,15 +65,16 @@ class SunsetRequest {
     }
 
     fun setDayProgress(day:CircularProgressBar, night:CircularProgressBar, sunset:TextView,
-                       sunrise:TextView, settime:Int, risetime:Int, cityTimezone:Int){
+                       sunrise:TextView, settimee:Int, risetimee:Int, cityTimezone:Int){
 
-        val sdf = SimpleDateFormat("HH:mm", Locale(Locale.getDefault().displayLanguage))
-        val sunsett = sdf.format(Date(settime*1000L))
-        val sunrisee = sdf.format(Date(risetime*1000L))
-        val unixTime = (System.currentTimeMillis() / 1000L).toDouble().roundToInt()
-        val tz = TimeZone.getDefault()
-        val timezoneInPhone = tz.getOffset(Date().time)/1000
-        val timeInCity = (unixTime - timezoneInPhone) + cityTimezone
+        val risetime = risetimee + cityTimezone
+        val settime = settimee + cityTimezone
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        sdf.timeZone = TimeZone.getTimeZone("GMT")
+        val sunsett = sdf.format(Date((settime)*1000L))
+        val sunrisee = sdf.format(Date((risetime)*1000L))
+        val unixTime = System.currentTimeMillis() / 1000
+        val timeInCity = unixTime + cityTimezone
 
         sunset.text = sunsett
         sunrise.text = sunrisee

@@ -24,6 +24,8 @@ import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.openWeatherAPIKey
 import pl.simplyinc.simplyclime.activities.server
 import pl.simplyinc.simplyclime.elements.*
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.roundToInt
 
 class NewestWeatherRequest(val c:Context,private val v:View, private val position:Int) {
@@ -32,6 +34,7 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
     var station = JSONObject()
     val json = Json(JsonConfiguration.Stable)
     val session = SessionPref(c)
+    private val weatherold = session.getPref("weathers").split("|")[position]
 
     fun getNewestWeather(stat:JSONObject, lat:String = "", lon:String = "", onSuccess: (searchval: String) -> Unit) {
 
@@ -102,11 +105,12 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
                         }
                     }
 
-                    setWeather(JSONObject(), station, true)
+                    setWeather(JSONObject(weatherold), station, true)
                 }
             onSuccess(searchvalue)
             },
             Response.ErrorListener {
+                setWeather(JSONObject(weatherold), station, true)
                 Toast.makeText(c, c.getString(R.string.checkconnection), Toast.LENGTH_SHORT).show()
             })
 
@@ -155,11 +159,13 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
                 setWeather(JSONObject(newweather), station, false)
             }else{
-                setWeather(JSONObject(), station, true)
+                setWeather(JSONObject(weatherold), station, true)
             }
-            onSuccess(searchvalue)
+            onSuccess(station.getString("city"))
         },
             Response.ErrorListener {
+                setWeather(JSONObject(weatherold), station, true)
+                onSuccess(station.getString("city"))
                 Toast.makeText(c, c.getString(R.string.checkconnection), Toast.LENGTH_SHORT).show()
             })
 
@@ -257,16 +263,30 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
             city.setCompoundDrawablesWithIntrinsicBounds(0,0,R.drawable.ic_gps_fixed_white_24dp,0)
 
 
-        if(error){
-            allweather.visibility = View.GONE
-            updated.visibility = View.GONE
-            errorlayout.visibility = View.VISIBLE
-            return false
-        }else{
-            allweather.visibility = View.VISIBLE
-            errorlayout.visibility = View.GONE
-        }
+        if(error) {
+            if (w.getInt("time") == 0) {
+                allweather.visibility = View.GONE
+                updated.visibility = View.GONE
+                errorlayout.visibility = View.VISIBLE
+                return false
+            }else{
+                val unixTime = System.currentTimeMillis()
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                val lastdat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
+                lastdat.timeZone = TimeZone.getTimeZone("GMT")
+                val update = Date(unixTime)
+                val datafrom = Date(w.getLong("time") * 1000L)
+                val text =
+                    c.getString(R.string.lastupdate) + " " + lastdat.format(datafrom) + ". " + c.getString(
+                        R.string.updated
+                    ) + " " + sdf.format(update)
 
+                updated.text = text
+                updated.visibility = View.VISIBLE
+                allweather.visibility = View.VISIBLE
+                errorlayout.visibility = View.GONE
+            }
+        }
         //temp
             if(w.getString("tempin") != "null") {
                 setanimListener(tempin)
@@ -424,14 +444,6 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
         setanimListener(null, items)
         setanimListener(null, null, weatherimg)
 
-/*
-        val sdf = SimpleDateFormat("HH:mm", Locale(Locale.getDefault().displayLanguage))
-        val lastdat = SimpleDateFormat("dd.MM HH:mm", Locale(Locale.getDefault().displayLanguage))
-        val update = Date(w.getLong("updatedtime")*1000L)
-        val datafrom = Date(w.getLong("time")*1000L)
-        val text = c.getString(R.string.lastupdate) + " " + lastdat.format(datafrom) + ". " + c.getString(R.string.updated) +" "+ sdf.format(update)
-        updated.text = text
-        */
 
         return true
     }

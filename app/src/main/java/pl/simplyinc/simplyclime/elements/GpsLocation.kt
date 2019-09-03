@@ -136,6 +136,7 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                     val activity = act as SearchWeatherActivity
                     activity.setLocation(loc)
                 }else{
+                    val update =  NewestWeatherRequest(c, rootview!!,position)
 
                     if(checkChangeLoc){
 
@@ -144,13 +145,13 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                         oldLocation.longitude = stationsData.getDouble("lon")
 
                         val distance = loc.distanceTo(oldLocation)
-                        val update =  NewestWeatherRequest(c, rootview!!,position)
 
                         if(distance > 7000){
-                                chartRequestGPS(loc, stationsData.getBoolean("privstation"))
+                                allRequestGPS(loc, stationsData.getBoolean("privstation"))
                         }else{
+                            update.setWeather(JSONObject(weatherOld), stationsData, false)
+
                             if(stationsData.getBoolean("privstation")) {
-                                update.setWeather(JSONObject(weatherOld), stationsData, false)
                                 chartRequest?.getChartData(
                                     stationsData.getString("searchvalue"),
                                     stationsData.getString("tempunit"),
@@ -158,31 +159,27 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                                     loc.longitude.toString()
                                 )
                             }else{
-                                update.getNewestWeatherOpenWeather(
-                                    stationsData,
-                                    loc.latitude.toString(),
-                                    loc.longitude.toString()){
                                     chartRequest?.getChartDataOpenWeather(
-                                        it,
+                                        stationsData.getString("city"),
                                         stationsData.getString("tempunit"),
                                         loc.latitude.toString(),
                                         loc.longitude.toString()
                                     ){data ->
                                         frag?.setForecastData(data)
                                     }
-                                }
+
                             }
                         }
 
                     }else {
-                            chartRequestGPS(loc, stationsData!!.getBoolean("privstation"))
+                        allRequestGPS(loc, stationsData!!.getBoolean("privstation"))
                     }
                 }
             }
         }
     }
 
-    private fun chartRequestGPS(loc:Location, privatestation:Boolean){
+    private fun allRequestGPS(loc:Location, privatestation:Boolean){
         val getWeather = NewestWeatherRequest(
             c,
             rootview!!,
@@ -206,11 +203,13 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
             }
 
         }else {
+
             getWeather.getNewestWeatherOpenWeather(
                 stationsData!!,
                 loc.latitude.toString(),
                 loc.longitude.toString()
             ) {
+
                 chartRequest?.getChartDataOpenWeather(
                     it,
                     stationsData.getString("tempunit"),

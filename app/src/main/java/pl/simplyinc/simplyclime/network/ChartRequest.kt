@@ -3,6 +3,7 @@ package pl.simplyinc.simplyclime.network
 import android.annotation.SuppressLint
 import android.content.Context
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -234,6 +235,8 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
         xAxis.mAxisMaximum = combinedData.xMax + 0.25f
         xAxis.valueFormatter = MyValueFormatter(xValsDateLabel)
         xAxis.textColor = ContextCompat.getColor(c, R.color.white)
+
+        mChart.visibility = View.VISIBLE
         mChart.animateX(400)
         mChart.animateY(400)
         mChart.setVisibleXRangeMaximum(13f)

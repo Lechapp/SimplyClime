@@ -22,7 +22,6 @@ import kotlin.math.roundToInt
 import android.text.Spanned
 import android.text.SpannableStringBuilder
 import android.text.style.SuperscriptSpan
-import android.util.Log
 import pl.simplyinc.simplyclime.activities.openWeatherAPIKey
 
 
@@ -66,7 +65,7 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
 
                 setWidget(newweather, false)
             }else{
-                setWidget(weatherOld, false)
+                setWidget(weatherOld, true)
             }
 
         },
@@ -117,7 +116,7 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
 
                 setWidget(newweather, false)
             }else{
-                setWidget(weatherOld, false)
+                setWidget(weatherOld, true)
             }
         },
             Response.ErrorListener {
@@ -139,8 +138,9 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
         views.setTextViewText(R.id.title, s.getString("title"))
         val black = if(widgetinfo.getBoolean("blackbg")) "weathericon" else "weathericonblack"
         setForecast(views,newforecast,c, s.getString("tempunit"), black)
+        val w = JSONObject(weather)
 
-        if(error) {
+        if(error && w.getInt("updatedtime") == 0) {
             views.setViewVisibility(R.id.battery, View.GONE)
             views.setViewVisibility(R.id.batteryimg, View.GONE)
             views.setViewVisibility(R.id.datalayout, View.GONE)
@@ -172,11 +172,11 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
         }else views.setViewVisibility(R.id.errortext, View.GONE)
 
 
-        val w = JSONObject(weather)
         val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
         val lastdat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
         lastdat.timeZone = TimeZone.getTimeZone("GMT")
-        val update = Date(w.getLong("updatedtime")*1000L)
+        val unixTime = System.currentTimeMillis()
+        val update = Date(unixTime)
         val datafrom = Date(w.getLong("time")*1000L)
         val text = c.getString(R.string.lastupdate) + " " + lastdat.format(datafrom) + ". " + c.getString(R.string.updated) +" "+ sdf.format(update)
         views.setTextViewText(R.id.updatedat, text)

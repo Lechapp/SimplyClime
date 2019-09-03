@@ -11,7 +11,7 @@
     <string name="log_in">Zaloguj</string>
     <string name="or">lub</string>
     <string name="emptylogin">Wpisz nazwię użytkownika i hasło</string>
-    <string name="error">Wysąpił błąd, spróbuj ponownie</string>
+    <string name="error">Wystąpił błąd, spróbuj ponownie</string>
     <string name="regusername">Nazwa użytkownika</string>
     <string name="email">Adres e-mail</string>
     <string name="createacc">Stwórz konto</string>

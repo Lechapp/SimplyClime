@@ -14,7 +14,7 @@
     <string name="or">or</string>
     <string name="register">Register</string>
     <string name="emptylogin">Enter username and password</string>
-    <string name="error">Unexcepted error, please try again</string>
+    <string name="error">Unexpected error, please try again</string>
     <string name="regusername">Username</string>
     <string name="email">E-mail</string>
     <string name="createacc">Create account</string>

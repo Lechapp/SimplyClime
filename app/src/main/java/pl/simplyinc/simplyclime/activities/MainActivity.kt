@@ -16,9 +16,8 @@ import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
-import android.support.v4.app.Fragment
-import pl.simplyinc.simplyclime.fragments.AddWeather
-import pl.simplyinc.simplyclime.fragments.Weatherinfo
+import android.support.v4.view.ViewPager
+import pl.simplyinc.simplyclime.adapters.PagerAdapter
 import pl.simplyinc.simplyclime.widget.NewestWeather
 import kotlin.system.exitProcess
 
@@ -28,12 +27,10 @@ const val openWeatherAPIKey = "45dc4902d2e0ef0659fc3e32b9195973"
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var pagerAdapter: PagerAdapter
     lateinit var session:SessionPref
     lateinit var adaptername:StationNameAdapter
-    lateinit var frag:Fragment
     private lateinit var title:ArrayList<String>
-    private val fm = supportFragmentManager
-    var position = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +40,9 @@ class MainActivity : AppCompatActivity() {
 
         supportActionBar?.hide()
         session = SessionPref(this)
+        pagerAdapter = PagerAdapter(supportFragmentManager, this)
+        weathers.adapter = pagerAdapter
+
         setTitleBar()
 
         checkLogIn()
@@ -50,29 +50,20 @@ class MainActivity : AppCompatActivity() {
         updateWidget()
 
         checkactiveposition()
+
+        weathers.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(state: Int) {}
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+
+            override fun onPageSelected(position: Int) {
+                adaptername.setActive(position)
+            }
+        })
     }
 
     override fun onBackPressed() {
-        if(position < title.size-1 && ::frag.isInitialized){
-            val weinf = frag as Weatherinfo
-            if(!weinf.hideDayByDay())
-                exitProcess(-1)
-        }else exitProcess(-1)
-    }
-    fun setWeather(position:Int){
-
-            if (::frag.isInitialized)
-                fm.beginTransaction().remove(frag).commit()
-
-            frag = if (position >= title.size - 1) {
-                adaptername.setActive(position)
-                AddWeather()
-            }else
-                Weatherinfo.newInstance(position)
-
-
-            fm.beginTransaction().add(R.id.container, frag).commit()
-
+        if(!pagerAdapter.hidedaylist(weathers.currentItem))
+            exitProcess(-1)
     }
 
     fun setTitleBar(){
@@ -88,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         title.add(getString(R.string.addcity))
 
-        adaptername = StationNameAdapter(title,this)
+        adaptername = StationNameAdapter(title,this, weathers)
         namerecycler.adapter = adaptername
         namerecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
@@ -160,9 +151,9 @@ class MainActivity : AppCompatActivity() {
     private fun checkactiveposition(){
         val weatherposition = intent.getIntExtra("setweather", -1)
         if(weatherposition != -1){
-            setWeather(weatherposition)
-            position = weatherposition
-        }else setWeather(position)
+            adaptername.setActive(weatherposition)
+            weathers.setCurrentItem(weatherposition,true)
+        }
     }
 
     private fun checkLogIn(){

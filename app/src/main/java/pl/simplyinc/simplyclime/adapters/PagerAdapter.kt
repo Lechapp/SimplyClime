@@ -39,6 +39,6 @@ class PagerAdapter(fm:FragmentManager, val context:Context) :FragmentStatePagerA
     }
 
     fun hidedaylist(whichone:Int):Boolean{
-        return if(frags[whichone] != null && frags[whichone]!!.hideDayByDay()) true else false
+        return (frags[whichone] != null && frags[whichone]!!.hideDayByDay())
     }
 }

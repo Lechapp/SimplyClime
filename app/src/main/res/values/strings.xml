@@ -24,6 +24,7 @@
     <string name="country">Country</string>
     <string name="city">City</string>
     <string name="street">Street</string>
+    <string name="registertext">Register in SimplyClime!</string>
     <string name="numberstation">"Weather stations: "</string>
     <string name="emptysearch">No weather stations in this city</string>
     <string name="wrongcity">City not found</string>

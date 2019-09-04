@@ -106,4 +106,5 @@
     <string name="wrongcity">Nie znaleziono miasta</string>
     <string name="howitworks">Jak to działa?</string>
     <string name="exactlocation">Kliknij na flagę, aby zobaczyć dokładną lokalizację</string>
+    <string name="registertext">Zarejestruj się w SimplyClime!</string>
 </resources>

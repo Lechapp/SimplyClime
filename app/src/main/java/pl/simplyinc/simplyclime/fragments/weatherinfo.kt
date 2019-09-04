@@ -6,10 +6,14 @@ import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import com.github.mikephil.charting.charts.Chart
+import com.github.mikephil.charting.listener.ChartTouchListener
 import kotlinx.android.synthetic.main.fragment_weatherinfo.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -22,6 +26,7 @@ import pl.simplyinc.simplyclime.elements.*
 import pl.simplyinc.simplyclime.network.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.thread
 
 
 private const val ARG_PARAM1 = "position"
@@ -67,6 +72,7 @@ class Weatherinfo : Fragment() {
 
             if(stationdata.getInt("refreshtime") + weatherdata.getInt("updatedtime") <= unixTime) {
                 if(stationdata.getBoolean("gps")){
+                    update.setWeather(weatherdata, stationdata, false) //tymczasowo
 
                     val gps = GpsLocation(activity!!,
                         activity!!.applicationContext,
@@ -89,6 +95,8 @@ class Weatherinfo : Fragment() {
                 }
             }else{
                 if(stationdata.getBoolean("gps")){
+                    update.setWeather(weatherdata, stationdata, false) //tymczasowo
+
                     val gps = GpsLocation(activity!!,
                         activity!!.applicationContext,
                         false,
@@ -106,9 +114,13 @@ class Weatherinfo : Fragment() {
                 }else
                     update.setWeather(weatherdata, stationdata, false)
             }
+
             setdayprogress(stationdata)
+
             setBackground(weatherdata, stationdata)
+
             setClickDayByDay()
+
 
             if(!isChartSet) {
                 if(stationdata.getBoolean("privstation")) {
@@ -183,6 +195,7 @@ class Weatherinfo : Fragment() {
                 setDayByDayForecastOpenWeather()
             }
             allmain.visibility = View.GONE
+            weathercontainer.visibility = View.GONE
             dayfragment.visibility = View.VISIBLE
             dayfragment.animation = AnimationUtils.loadAnimation(activity!!.applicationContext, R.anim.slidein_from_right_to_left)
         }
@@ -215,6 +228,7 @@ class Weatherinfo : Fragment() {
         return if(dayfragment != null && dayfragment.visibility == View.VISIBLE) {
             dayfragment.visibility = View.GONE
             allmain.visibility = View.VISIBLE
+            weathercontainer.visibility = View.VISIBLE
             allmain.animation = AnimationUtils.loadAnimation(activity!!.applicationContext, R.anim.slidein_from_left_to_right)
             true
         }else false
@@ -256,16 +270,11 @@ class Weatherinfo : Fragment() {
     private fun setVal(){
         day_ProgressBar.setType("day")
         night_ProgressBar.setType("night")
-        val act = activity as MainActivity
-        act.adaptername.setActive(position)
         session = SessionPref(activity!!.applicationContext)
         daybydayrec.layoutManager = LinearLayoutManager(activity!!.applicationContext)
         val allstat =  session.getPref("stations").split("|")
         station = allstat[position]
 
-        val containerweather = rootview.findViewById<ConstraintLayout>(R.id.containerweather)
-        val listeer = OnSwipeTouchListener(act.applicationContext, null, null, (allstat.size-1).toFloat(), act)
-        containerweather.setOnTouchListener(listeer)
     }
 
     private fun setBackground(w:JSONObject, s:JSONObject) {
@@ -290,7 +299,7 @@ class Weatherinfo : Fragment() {
                 w.getString("rainfall"))
         }
 
-        bgweather.background = ContextCompat.getDrawable(context!!, img)
+       bgweather.background = ContextCompat.getDrawable(context!!, img)
 
     }
 }

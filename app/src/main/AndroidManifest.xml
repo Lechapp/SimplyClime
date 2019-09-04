@@ -38,7 +38,8 @@
         </activity>
         <activity android:name=".activities.AddStationActivity">
         </activity>
-        <activity android:name=".activities.RegisterActivity">
+        <activity android:name=".activities.RegisterActivity"
+                android:screenOrientation="portrait">
         </activity>
         <activity android:name=".activities.SearchWeatherActivity">
             <intent-filter android:label="@string/search">

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/bgweather"
-        android:paddingTop="24dp" android:layout_height="match_parent"
-        tools:context=".fragments.Weatherinfo">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
+            android:id="@+id/dik"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingTop="22.5dp">
 
         <LinearLayout
                 android:id="@+id/dayfragment"
@@ -20,12 +20,16 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/allmain"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/forecastrecycler"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="6dp" />
 
@@ -49,7 +53,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                     android:id="@+id/citymain"
@@ -515,7 +522,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
+                        android:layout_marginEnd="20dp"
                         android:background="@color/blackalpha"
                         android:contentDescription="@string/settings"
                         android:padding="2dp"
@@ -555,53 +562,60 @@
                     android:text="@string/dayafterday"
                     android:textColor="@color/white" />
 
-            <android.support.constraint.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="25dp">
-
-                <com.github.mikephil.charting.charts.CombinedChart
-                        android:id="@+id/weatherchart"
-                        android:layout_width="match_parent"
-                        android:layout_height="150dp"
-                        android:background="@drawable/roundcorner"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:visibility="gone">
-
-                </com.github.mikephil.charting.charts.CombinedChart>
-
-                <ProgressBar
-                        android:id="@+id/chartProgress"
-                        style="?android:attr/progressBarStyle"
-                        android:layout_width="123dp"
-                        android:layout_height="0dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="@+id/weatherchart"
-                        app:layout_constraintEnd_toEndOf="@+id/weatherchart"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="@+id/weatherchart" />
-
-                <ImageView
-                        android:id="@+id/swipetutorial"
-                        android:layout_width="wrap_content"
-                        android:layout_height="100dp"
-                        android:layout_marginBottom="10dp"
-                        android:contentDescription="@string/weathericon"
-                        android:src="@drawable/swipe"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.55"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-            </android.support.constraint.ConstraintLayout>
-
         </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+
+        <android.support.constraint.ConstraintLayout
+                android:id="@+id/weathercontainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="18.6dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/allmain">
+
+            <com.github.mikephil.charting.charts.CombinedChart
+                    android:id="@+id/weatherchart"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/blackalpha"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:visibility="gone">
+
+            </com.github.mikephil.charting.charts.CombinedChart>
+
+            <ProgressBar
+                    android:id="@+id/chartProgress"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="50dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@+id/weatherchart"
+                    app:layout_constraintEnd_toEndOf="@+id/weatherchart"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/weatherchart" />
+
+            <ImageView
+                    android:id="@+id/swipetutorial"
+                    android:layout_width="wrap_content"
+                    android:layout_height="100dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="@string/weathericon"
+                    android:src="@drawable/swipe"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.55"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+        </android.support.constraint.ConstraintLayout>
+    </android.support.constraint.ConstraintLayout>
+
+</LinearLayout>

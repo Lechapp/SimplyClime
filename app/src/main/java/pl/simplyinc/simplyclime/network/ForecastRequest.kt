@@ -23,8 +23,11 @@ import kotlin.math.roundToInt
 
 class ForecastRequest(val context: Context, private val pos:Int, val tempunit:String = "", val widget:Boolean = false) {
 
+    val session = SessionPref(context)
 
     fun getNewestForecast(city:String, forecastRecycler:RecyclerView? = null, onSuccess : (forecast:JSONObject) -> Unit) {
+        val alloldforecasts = session.getPref("forecasts").split("|")[pos]
+        val oldforecast = JSONObject(alloldforecasts)
 
         val url = "https://api.openweathermap.org/data/2.5/forecast?$city&appid=$openWeatherAPIKey"
 
@@ -50,6 +53,7 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
                 var time:Int
                 var day:String
                 var licznik = 0
+                var licznikfirstday = 0
                 var arrayiconOpenWeather = arrayListOf(0,0,0,0,0,0,0,0,0)
                 val json = Json(JsonConfiguration.Stable)
 
@@ -104,17 +108,23 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
                             tempmin = 999
                             tempmax = 0
 
-                            if(licznik > 4)
+                            if(licznik > 5)
                                 nextdays.add(addday)
                             else
                                 firsttime = 0
 
-                            licznik = 0
+                            if(licznikfirstday == 0)
+                                licznikfirstday = licznik
 
+                            licznik = 0
 
                     }
 
                 }
+                if(licznikfirstday < 7 && oldforecast.getString("day0").isNotEmpty()){
+                    nextdays[0] = oldforecast.getString("day0")
+                }
+
                 arrayiconOpenWeather[5] = arrayiconOpenWeather[1] + arrayiconOpenWeather[3] + arrayiconOpenWeather[4]
                 arrayiconOpenWeather[2] = arrayiconOpenWeather[0] + arrayiconOpenWeather[1]
                 iconid = getIcon(arrayiconOpenWeather)
@@ -124,6 +134,8 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
 
                 for(i in nextdays.size .. 5)
                     nextdays.add("")
+
+                oldforecast.getString("day0")
 
                 val forecast = ForecastData(firsttime.plus(timezone), nextdays[0], nextdays[1], nextdays[2], nextdays[3], nextdays[4])
                 val newforecast = json.stringify(ForecastData.serializer(), forecast)
@@ -141,7 +153,6 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
     }
 
     private fun saveNewForecast(newforecast:String, forecastRecycler: RecyclerView?){
-        val session = SessionPref(context)
         val active = session.getPref("forecasts").split("|").toMutableList()
         active[pos] = newforecast
         val allnew = active.joinToString("|")
@@ -165,7 +176,6 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
         }
 
         val icon = if(allmaxs.size > 1) ((allmaxs[0] + allmaxs[1] - 0.01)/2.0).roundToInt() else allmaxs[0]
-
 
         return when(icon){
             0 -> listOf(R.drawable.sun_w, R.drawable.sun_b)

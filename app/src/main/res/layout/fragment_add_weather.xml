@@ -9,16 +9,13 @@
             android:id="@+id/containerall"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/wallpaper"
-            android:paddingStart="10dp"
+            android:background="@drawable/sun_0"
             android:paddingTop="30dp"
-            android:paddingEnd="10dp">
+            >
 
         <android.support.constraint.ConstraintLayout
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="9dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -26,7 +23,7 @@
 
             <TextView
                     android:id="@+id/textView2"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:background="@color/blackalpha"
@@ -41,10 +38,11 @@
 
             <TextView
                     android:id="@+id/textView3"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="60dp"
                     android:background="@color/blackalpha"
+                    android:gravity="center"
                     android:padding="10dp"
                     android:text="@string/station"
                     android:textColor="@color/white"
@@ -69,7 +67,9 @@
                     style="@style/Widget.AppCompat.Button.Colored"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
                     android:layout_marginTop="30dp"
+                    android:layout_marginEnd="15dp"
                     android:layout_marginBottom="20dp"
                     android:text="@string/addstation"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -83,7 +83,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="28dp"
-                    android:layout_marginEnd="20dp"
+                    android:layout_marginEnd="30dp"
                     android:text="@string/howitworks"
                     android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="@+id/addstation"

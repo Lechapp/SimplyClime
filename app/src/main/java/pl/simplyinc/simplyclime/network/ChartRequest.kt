@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.ScrollView
 import android.widget.Toast
 import com.android.volley.Request
 import com.android.volley.Response
@@ -128,7 +129,7 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
                 onSuccess(allforecast)
                 mChart.visibility = View.VISIBLE
 
-                setChart(weatherData, tempunit, 1.1101f)
+                setChart(weatherData, tempunit, 0f)
             }else{
                 Toast.makeText(c, c.getString(R.string.error), Toast.LENGTH_SHORT).show()
             }
@@ -241,7 +242,7 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
         mChart.animateY(400)
         mChart.setVisibleXRangeMaximum(13f)
 
-        val startline = if(offset == 1.1101f) 0f else offset+0.1f //if true then only futurecast from openweather
+        val startline = if(offset < 2) 0f else offset+0.1f //if true then only futurecast from openweather
         val limline = LimitLine(startline, c.getString(R.string.today))
             mChart.moveViewToX(startline)
 

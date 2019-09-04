@@ -27,11 +27,6 @@ class AddWeather : Fragment() {
         super.onActivityCreated(savedInstanceState)
         val sessionPref = SessionPref(context!!)
 
-        val act = activity as MainActivity
-        val allstat = sessionPref.getPref("stations").split("|")
-        val listeer = OnSwipeTouchListener(act.applicationContext, null, null, (allstat.size-1).toFloat(), act)
-        containerall.setOnTouchListener(listeer)
-
         addcity.setOnClickListener {
             val addcity = Intent(context, SearchWeatherActivity::class.java)
             startActivity(addcity)

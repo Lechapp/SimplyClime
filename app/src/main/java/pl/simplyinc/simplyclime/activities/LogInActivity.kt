@@ -29,6 +29,7 @@ class LogInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_in)
         session = SessionPref(this)
+        supportActionBar?.hide()
 
         register.setOnClickListener {
             val reg = Intent(applicationContext, RegisterActivity::class.java)

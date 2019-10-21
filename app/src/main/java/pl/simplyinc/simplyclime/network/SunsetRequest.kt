@@ -21,9 +21,9 @@ import kotlin.math.roundToInt
 
 class SunsetRequest {
 
-    fun getNewestSunset(context: Context, city:String, pos:Int,day:CircularProgressBar, night:CircularProgressBar, sset:TextView, srise:TextView) {
+    fun getNewestSunset(context: Context, searchval:String, pos:Int,day:CircularProgressBar, night:CircularProgressBar, sset:TextView, srise:TextView) {
 
-        val url = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$openWeatherAPIKey"
+        val url = "https://api.openweathermap.org/data/2.5/weather?$searchval&appid=$openWeatherAPIKey"
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 

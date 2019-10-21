@@ -68,7 +68,7 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
                     val newweather = json.stringify(WeatherData.serializer(), newW)
                     saveWeather(newweather)
-                    if(station.getBoolean("gps")) {
+
                         saveNewStation(
                             response.getString("city"),
                             response.getInt("sunset"),
@@ -78,7 +78,7 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
                             lat,
                             lon
                         )
-                    }
+
                     setWeather(JSONObject(newweather), station, false)
                 }else{
 
@@ -154,8 +154,15 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
                 saveWeather(newweather)
 
                 val sys = response.getJSONObject("sys")
-                saveNewStation(response.getString("name"),sys.getInt("sunset"),sys.getInt("sunrise"),
-                    sys.getString("country"), response.getInt("timezone"), lat, lon)
+
+                    saveNewStation(
+                        response.getString("name"),
+                        sys.getInt("sunset"),
+                        sys.getInt("sunrise"),
+                        sys.getString("country"),
+                        response.getInt("timezone"),
+                        lat, lon
+                    )
 
                 setWeather(JSONObject(newweather), station, false)
             }else{
@@ -211,11 +218,12 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
             val addedforecast = json.stringify(ForecastData.serializer(), forecast) + "|"
 
             for (i in 0 until allstat.size - 1) {
-                allnewstat += if (position == i) "$newstation|" else allstat[position] + "|"
-                allnewforecast += if (position == i) "$addedforecast|" else activeforecasts[position] + "|"
+                allnewstat += if (position == i) "$newstation|" else allstat[i] + "|"
+                allnewforecast += if (position == i) "$addedforecast|" else activeforecasts[i] + "|"
             }
-            session.setPref("stations", allnewstat)
 
+
+            session.setPref("stations", allnewstat)
             session.setPref("forecasts", allnewforecast)
         }
     }

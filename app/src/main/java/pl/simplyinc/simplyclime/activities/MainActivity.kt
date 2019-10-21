@@ -17,6 +17,7 @@ import java.lang.Exception
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.support.v4.view.ViewPager
+import android.util.Log
 import pl.simplyinc.simplyclime.adapters.PagerAdapter
 import pl.simplyinc.simplyclime.widget.NewestWeather
 import kotlin.system.exitProcess
@@ -150,6 +151,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkactiveposition(){
         val weatherposition = intent.getIntExtra("setweather", -1)
+
         if(weatherposition != -1){
             adaptername.setActive(weatherposition)
             weathers.setCurrentItem(weatherposition,true)

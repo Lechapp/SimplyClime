@@ -32,8 +32,10 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
     private var netlocation:Location? = null
     private var hasNetwork = false
     private var countLoc = 0
+    private var counter = 0
 
-   inner class GpsLocationListener(private var gpslocation:Location?, private val netlocation:Location?) :LocationListener{
+
+    inner class GpsLocationListener(private var gpslocation:Location?, private val netlocation:Location?) :LocationListener{
         override fun onLocationChanged(location: Location?) {
             if (location != null)
             {
@@ -68,6 +70,8 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
 
     @SuppressLint("MissingPermission")
     fun getLocation(){
+        counter = 0
+        countLoc = 0
         locationManager = c.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         hasGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         hasNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
@@ -109,7 +113,9 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
     }
 
     private fun checkLoc(loc:Location){
-        if(loc.accuracy < 1000) {
+        counter++
+
+        if(loc.accuracy < (1000 + (counter*150))) {
             countLoc++
         }
         if(countLoc == 2){
@@ -185,8 +191,9 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
             rootview!!,
             position
         )
+        val main = act as MainActivity
+
         if(privatestation){
-            val main = act as MainActivity
 
             getWeather.getNewestWeather(
                 stationsData!!,
@@ -209,7 +216,6 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                 loc.latitude.toString(),
                 loc.longitude.toString()
             ) {
-
                 chartRequest?.getChartDataOpenWeather(
                     it,
                     stationsData.getString("tempunit"),
@@ -218,6 +224,8 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                 ) { data ->
                     frag?.setForecastData(data)
                 }
+
+                main.setTitleBar()
             }
         }
     }

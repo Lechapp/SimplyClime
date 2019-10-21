@@ -23,10 +23,10 @@ import pl.simplyinc.simplyclime.network.DeleteWeaterStation
 class SettingsActivity : AppCompatActivity() {
 
     var position:Int = -1
-    lateinit var allstations:String
+    private lateinit var allstations:String
     lateinit var station:List<String>
     lateinit var session:SessionPref
-    lateinit var objStation:JSONObject
+    private lateinit var objStation:JSONObject
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

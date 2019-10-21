@@ -163,6 +163,7 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
 
             //vertical day line
             //fromend max 43
+            val limeoffset = if(offset < 2) 1.101f else offset
             if (i > (weatherData.length() - 36)) {
                 val hour = ((onePack.getString(2).split(" ")[0]).split(":")[0]).toInt()
                 countDataPack++
@@ -179,7 +180,7 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
                         else -> c.getString(R.string.nextday)
                     }
 
-                    val limlinee = LimitLine(((countDataPack * 1f) + offset +1.3f), dayOfWeek)
+                    val limlinee = LimitLine(((countDataPack * 1f) + limeoffset +1.3f), dayOfWeek)
                     limlinee.textColor = ContextCompat.getColor(c, R.color.white)
                     limlinee.enableDashedLine(6f, 6f, 2f)
                     xAxis.addLimitLine(limlinee)

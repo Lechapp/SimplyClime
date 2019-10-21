@@ -102,7 +102,8 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
                             iconid = getIcon(arrayiconOpenWeather)
                             arrayiconOpenWeather = arrayListOf(0,0,0,0,0,0,0,0,0)
 
-                            val dayObject = OneDayForecast(tempmin, tempmax, iconid[0], iconid[1])
+                            val timeforecast = (System.currentTimeMillis()/1000).toInt()
+                            val dayObject = OneDayForecast(tempmin, tempmax, iconid[0], iconid[1], timeforecast)
 
                             val addday = json.stringify(OneDayForecast.serializer(), dayObject)
                             tempmin = 999
@@ -121,8 +122,15 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
                     }
 
                 }
-                if(licznikfirstday < 7 && oldforecast.getString("day0").isNotEmpty()){
-                    nextdays[0] = oldforecast.getString("day0")
+                val checkTime = (System.currentTimeMillis()/1000).toInt()
+
+                if(oldforecast.getString("day0").isNotEmpty()) {
+                    val day0 = JSONObject(oldforecast.getString("day0"))
+                    val timeDay0 = day0.getInt("time")
+
+                    if (licznikfirstday < 6 && timeDay0 != 0 && checkTime - timeDay0 < (10 * 3600)) {
+                        nextdays[0] = oldforecast.getString("day0")
+                    }
                 }
 
                 arrayiconOpenWeather[5] = arrayiconOpenWeather[1] + arrayiconOpenWeather[3] + arrayiconOpenWeather[4]
@@ -139,6 +147,7 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
 
                 val forecast = ForecastData(firsttime.plus(timezone), nextdays[0], nextdays[1], nextdays[2], nextdays[3], nextdays[4])
                 val newforecast = json.stringify(ForecastData.serializer(), forecast)
+
                 saveNewForecast(newforecast, forecastRecycler)
 
                 onSuccess(JSONObject(newforecast))
@@ -155,7 +164,7 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
     private fun saveNewForecast(newforecast:String, forecastRecycler: RecyclerView?){
         val active = session.getPref("forecasts").split("|").toMutableList()
         active[pos] = newforecast
-        val allnew = active.joinToString("|")
+        val allnew = active.joinToString("|") + "|"
         session.setPref("forecasts", allnew)
 
         if(!widget)

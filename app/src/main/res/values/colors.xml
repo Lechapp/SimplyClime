@@ -2,11 +2,11 @@
 <resources>
     <color name="colorPrimary">#0099ff</color>
     <color name="underline">#00cc60</color>
-    <color name="colorPrimaryaplha">#5500cc60</color>
+    <color name="colorPrimaryaplha">#660099ff</color>
     <color name="none">#00000000</color>
     <color name="grey">#aaaaaa</color>
     <color name="blackalpha">#4f000000</color>
-    <color name="blackalphadark">#77000000</color>
+    <color name="blackalphadark">#99000000</color>
     <color name="blackfont">#222222</color>
     <color name="whitealpha">#eeFFFFFF</color>
     <color name="white">#FFFFFF</color>

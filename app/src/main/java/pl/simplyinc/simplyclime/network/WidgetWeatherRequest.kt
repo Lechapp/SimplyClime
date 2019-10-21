@@ -13,9 +13,6 @@ import kotlinx.serialization.json.JsonConfiguration
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.server
-import pl.simplyinc.simplyclime.elements.SessionPref
-import pl.simplyinc.simplyclime.elements.WeatherData
-import pl.simplyinc.simplyclime.elements.WeatherTools
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -23,21 +20,22 @@ import android.text.Spanned
 import android.text.SpannableStringBuilder
 import android.text.style.SuperscriptSpan
 import pl.simplyinc.simplyclime.activities.openWeatherAPIKey
+import pl.simplyinc.simplyclime.elements.*
 
 
 class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidgetManager, private val appWidgetId: Int,
-                                private val s:JSONObject, private val widgetinfo:JSONObject, private var f:JSONObject) {
+                                private var s:JSONObject, private val widgetinfo:JSONObject, private var f:JSONObject,
+                           private val pos:Int) {
 
    private val tool = WeatherTools()
-    var tempunit = "°C"
-    var windunit = "km/h"
+   val session = SessionPref(c)
+
 
     fun getNewestWeatherWidget(weatherOld:String, lat:String = "", lon:String = "", forecast:JSONObject? = null) {
         if(forecast!= null)
             f = forecast
 
-        tempunit = s.getString("tempunit")
-        windunit = s.getString("windunit")
+
         val searchvalue = s.getString("searchvalue")
         val url = "http://$server/api/weather/$searchvalue?newest=true&gps=${s.getString("gps")}&lat=$lat&long=$lon"
 
@@ -61,9 +59,18 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
                 val json = Json(JsonConfiguration.Stable)
                 val newweather = json.stringify(WeatherData.serializer(), newW)
 
-                saveWeather(weatherOld,newweather)
+                saveWeather(newweather)
+                    saveNewStation(
+                        response.getString("city"),
+                        response.getInt("sunset"),
+                        response.getInt("sunrise"),
+                        response.getString("country"),
+                        response.getInt("timezone"),
+                        lat,
+                        lon
+                    )
+                    setWidget(newweather, false)
 
-                setWidget(newweather, false)
             }else{
                 setWidget(weatherOld, true)
             }
@@ -98,7 +105,7 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
                 val main = response.getJSONArray("weather").getJSONObject(0).getString("main")
                 val description = response.getJSONArray("weather").getJSONObject(0).getString("description")
                 val tempout = tool.roundto(w.getString("temp"))
-                val tempimg = tool.getTempImgId(tempout, true)
+                val tempimg = tool.getTempImgId(tempout, widgetinfo.getBoolean("blackbg"))
                 val humiout = w.getString("humidity")
                 val pressure = tool.roundto(w.getString("pressure"))
                 val time = response.getInt("dt") + response.getInt("timezone")
@@ -111,10 +118,21 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
 
                 val newweather = json.stringify(WeatherData.serializer(), newW)
 
-                saveWeather(weatherOld, newweather)
+                saveWeather(newweather)
+                    val sys = response.getJSONObject("sys")
 
+                    saveNewStation(
+                        response.getString("name"),
+                        sys.getInt("sunset"),
+                        sys.getInt("sunrise"),
+                        sys.getString("country"),
+                        response.getInt("timezone"),
+                        lat,
+                        lon
+                    )
 
-                setWidget(newweather, false)
+                    setWidget(newweather, false)
+
             }else{
                 setWidget(weatherOld, true)
             }
@@ -125,10 +143,49 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
 
         VolleySingleton.getInstance(c).addToRequestQueue(request)
     }
-    private fun saveWeather(weatherOld: String, newweather:String){
-        val session = SessionPref(c)
-        val allnewweathers = session.getPref("weathers").replace(weatherOld,newweather)
-        session.setPref("weathers", allnewweathers)
+
+    private fun saveNewStation(city:String, sunset:Int, sunrise:Int, country:String, timezone:Int, lati:String, longi:String){
+
+        if(s.getBoolean("gps") && s.getString("city") != city) {
+            val searchvalue = "$country/$city"
+
+            val newstat = StationsData(
+                "city",
+                city,
+                timezone,
+                searchvalue,
+                city,
+                "",
+                true,
+                s.getBoolean("privstation"),
+                s.getString("tempunit"),
+                s.getString("windunit"),
+                s.getInt("refreshtime"),
+                sunset,
+                sunrise,
+                lati.toDouble(),
+                longi.toDouble()
+            )
+
+            val json = Json(JsonConfiguration.Stable)
+
+            val newstation = json.stringify(StationsData.serializer(), newstat)
+            s = JSONObject(newstation)
+
+            val allstations = session.getPref("stations").split("|").toMutableList()
+            allstations[pos] = newstation
+
+            val allreadystation = allstations.joinToString("|")
+            session.setPref("stations", allreadystation)
+        }
+    }
+
+    private fun saveWeather(newweather:String){
+
+        val allweathers = session.getPref("weathers").split("|").toMutableList()
+        allweathers[pos] = newweather
+        val all = allweathers.joinToString("|")
+        session.setPref("weathers", all)
     }
 
     fun setWidget(weather:String, error:Boolean, newforecast:JSONObject = f):Boolean{
@@ -139,6 +196,8 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
         val black = if(widgetinfo.getBoolean("blackbg")) "weathericon" else "weathericonblack"
         setForecast(views,newforecast,c, s.getString("tempunit"), black)
         val w = JSONObject(weather)
+        val tempunit = s.getString("tempunit")
+        val windunit = s.getString("windunit")
 
         if(error && w.getInt("updatedtime") == 0) {
             views.setViewVisibility(R.id.battery, View.GONE)
@@ -257,6 +316,7 @@ class WidgetWeatherRequest(val c:Context, private val appWidgetManager: AppWidge
         //windspeed
         if(w.getString("windspeed") != "null" && widgetinfo.getBoolean("windspeed")) {
             val wind = tool.mstoWindUnit(w.getString("windspeed"), windunit)
+
             views.setTextViewText(
                 R.id.windspeed,
                 wind + s.getString("windunit")

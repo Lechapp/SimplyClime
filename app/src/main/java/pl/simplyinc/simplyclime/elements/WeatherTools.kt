@@ -1,8 +1,8 @@
 package pl.simplyinc.simplyclime.elements
 
-import android.util.Log
 import pl.simplyinc.simplyclime.R
 import java.lang.Exception
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -387,14 +387,27 @@ class WeatherTools {
     }
 
 
-    fun setBackground(tempout:String, rainfall:String, insolation:String, sunrise:Int, sunset:Int, timezone:Int, tempunit: String):Int{
+    fun setBackground(tempout:String, rainfall:String, insolation:String, sunrisee:Int, sunsett:Int, timezone:Int, tempunit: String):Int{
 
         var background:Int
         val x = (0..1).random()
 
-        val systemtime = System.currentTimeMillis()/1000L
-        val systemtimezone = (TimeZone.getDefault().rawOffset + TimeZone.getDefault().dstSavings)/1000L
-        val weathertimetoday = systemtime - systemtimezone + timezone
+        val sunrise = sunrisee + timezone
+        val sunset = sunsett + timezone
+
+        //get time with day of sunrise and time of now
+        val dayMonthYearSDF = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        dayMonthYearSDF.timeZone = TimeZone.getTimeZone("GMT")
+        val dayMonthYear = dayMonthYearSDF.format(Date(sunrise * 1000L))
+
+        val nowTime = SimpleDateFormat("HH:mm", Locale.getDefault())
+        nowTime.timeZone = TimeZone.getTimeZone("GMT")
+        val nowHourMinutes = nowTime.format(Date(System.currentTimeMillis() + (timezone*1000)))
+
+        val nowDate = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault())
+        nowDate.timeZone = TimeZone.getTimeZone("GMT")
+        val now = nowDate.parse("$dayMonthYear $nowHourMinutes").time/1000
+
 
         if(x == 1){
             //suncloud 0-3
@@ -441,7 +454,7 @@ class WeatherTools {
             insol = insolation.toInt()
         }catch (e: Exception){}
 
-        if(weathertimetoday in (sunrise-2200)..(sunrise+2200) || weathertimetoday in (sunset-2200)..(sunset+2200)){
+        if(now in (sunrise-2100)..(sunrise+2100) || now in (sunset-2100)..(sunset+2100)){
         //sunet 0-4
             val z = (0..4).random()
             background = when(z){
@@ -452,7 +465,7 @@ class WeatherTools {
                 4 -> R.drawable.sun_sunset_4
                 else -> R.drawable.sun_sunset_3
             }
-        }else if((weathertimetoday > sunset || weathertimetoday < sunrise) && sunset != 0){
+        }else if((now > sunset || now < sunrise) && sunset != 0){
         //moon 0-3
             val z = (0..3).random()
             background = when(z){
@@ -534,10 +547,11 @@ class WeatherTools {
     }
 
 
-    fun setBackgroundOpenWeather(mainn:String, descriptionn:String, timezone:Int, sunrise: Int, sunset: Int, rainn:String):Int{
+    fun setBackgroundOpenWeather(mainn:String, descriptionn:String, timezone:Int, sunrisee: Int, sunsett: Int, rainn:String):Int{
 
         var main:String = mainn
         var description:String = descriptionn
+
 
         if(rainn != "null") {
             try{
@@ -552,12 +566,24 @@ class WeatherTools {
             }catch (e:Exception){ }
         }
         val background:Int
-        //val systemtime = System.currentTimeMillis()/1000L
-        //val systemtimezone = (TimeZone.getDefault().rawOffset + TimeZone.getDefault().dstSavings)/1000L
-        //val weathertimetoday = systemtime - systemtimezone + timezone
-        val weathertimetoday = System.currentTimeMillis()/1000L
 
-        if(weathertimetoday in (sunrise-2200)..(sunrise+2200) || weathertimetoday in (sunset-2200)..(sunset+2200)){
+        val sunrise = sunrisee + timezone
+        val sunset = sunsett + timezone
+
+        //get time with day of sunrise and time of now
+        val dayMonthYearSDF = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        dayMonthYearSDF.timeZone = TimeZone.getTimeZone("GMT")
+        val dayMonthYear = dayMonthYearSDF.format(Date(sunrise * 1000L))
+
+        val nowTime = SimpleDateFormat("HH:mm", Locale.getDefault())
+        nowTime.timeZone = TimeZone.getTimeZone("GMT")
+        val nowHourMinutes = nowTime.format(Date(System.currentTimeMillis() + (timezone*1000)))
+
+        val nowDate = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault())
+            nowDate.timeZone = TimeZone.getTimeZone("GMT")
+        val now = nowDate.parse("$dayMonthYear $nowHourMinutes").time/1000
+
+        if(now in (sunrise-2100)..(sunrise+2100) || now in (sunset-2100)..(sunset+2100)){
             //sunet 0-4
             val z = (0..4).random()
             background = when(z){
@@ -568,7 +594,17 @@ class WeatherTools {
                 4 -> R.drawable.sun_sunset_4
                 else -> R.drawable.sun_sunset_3
             }
-        }else if(weathertimetoday in sunrise..sunset){
+        }else if((now > sunset || now < sunrise) && sunset != 0){
+            //moon 0-3
+            val z = (0..3).random()
+            background = when (z) {
+                0 -> R.drawable.moon_0
+                1 -> R.drawable.moon_1
+                2 -> R.drawable.moon_2
+                3 -> R.drawable.moon_3
+                else -> R.drawable.moon_3
+            }
+        }else{
 
             when(main){
                 "Clear" -> {
@@ -640,27 +676,6 @@ class WeatherTools {
                         5 -> R.drawable.cloud_5
                         else -> R.drawable.cloud_2
                     }
-                }
-            }
-        }else{
-            //moon 0-3
-
-            val z = (0..3).random()
-            if(sunset == 0) {
-                background = when (z) {
-                    0 -> R.drawable.sun_cloud_0
-                    1 -> R.drawable.sun_cloud_1
-                    2 -> R.drawable.sun_cloud_2
-                    3 -> R.drawable.sun_cloud_3
-                    else -> R.drawable.sun_cloud_2
-                }
-            }else {
-                background = when (z) {
-                    0 -> R.drawable.moon_0
-                    1 -> R.drawable.moon_1
-                    2 -> R.drawable.moon_2
-                    3 -> R.drawable.moon_3
-                    else -> R.drawable.moon_3
                 }
             }
         }

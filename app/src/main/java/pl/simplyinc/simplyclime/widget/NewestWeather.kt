@@ -30,9 +30,9 @@ class NewestWeather : AppWidgetProvider() {
                 val weatherposition = widgetdata.getInt("id")
                 updateAppWidget(context, appWidgetManager, appWidgetId, weatherposition)
                 val intent = Intent(context, MainActivity::class.java)
-                val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
-                intent.putExtra("fromwidget", weatherposition)
+                intent.putExtra("setweather", weatherposition)
 
+                val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
                 val views = RemoteViews(context.packageName, R.layout.newest_weather)
                 views.setOnClickPendingIntent(R.id.widget, pendingIntent)
 
@@ -64,6 +64,7 @@ class NewestWeather : AppWidgetProvider() {
             val widgetweather = session.getPref("weathers").split("|")[weatherposition]
             val station = session.getPref("stations").split("|")[weatherposition]
             val forecast = session.getPref("forecasts").split("|")[weatherposition]
+
             val f = JSONObject(forecast)
 
             //sprawdzic aktualnosc forecastu
@@ -77,7 +78,8 @@ class NewestWeather : AppWidgetProvider() {
                 appWidgetId,
                 stationdata,
                 widgetinfo,
-                f)
+                f,
+                weatherposition)
 
             val now = System.currentTimeMillis()/1000L
             val forecastsall = session.getPref("forecasts").split("|")
@@ -93,7 +95,8 @@ class NewestWeather : AppWidgetProvider() {
                             appWidgetId,
                             stationdata,
                             widgetinfo,
-                            it)
+                            it,
+                            weatherposition)
                         setData(context, update, stationdata, weatherdata, widgetweather, now)
                     }
                 }else{
@@ -117,7 +120,7 @@ class NewestWeather : AppWidgetProvider() {
 
         }
 
-        fun setData(context: Context, update:WidgetWeatherRequest, stationdata:JSONObject, weatherdata:JSONObject, widgetweather:String, unixTime:Long, forecastreq:ForecastRequest? = null){
+        private fun setData(context: Context, update:WidgetWeatherRequest, stationdata:JSONObject, weatherdata:JSONObject, widgetweather:String, unixTime:Long, forecastreq:ForecastRequest? = null){
             val gps = GpsLocation(
                 null,
                 context,

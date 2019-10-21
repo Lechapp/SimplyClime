@@ -29,7 +29,7 @@ class PagerAdapter(fm:FragmentManager, val context:Context) :FragmentStatePagerA
     }
 
     override fun getCount(): Int {
-    return (stations.size - 1) + 1
+    return stations.size
     }
 
     fun changeData(){

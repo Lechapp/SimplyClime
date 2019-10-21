@@ -2,31 +2,27 @@ package pl.simplyinc.simplyclime.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import com.github.mikephil.charting.charts.Chart
-import com.github.mikephil.charting.listener.ChartTouchListener
 import kotlinx.android.synthetic.main.fragment_weatherinfo.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import org.json.JSONArray
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
-import pl.simplyinc.simplyclime.activities.MainActivity
 import pl.simplyinc.simplyclime.activities.SettingsActivity
 import pl.simplyinc.simplyclime.adapters.DayByDayAdapter
 import pl.simplyinc.simplyclime.adapters.ForecastAdapter
 import pl.simplyinc.simplyclime.elements.*
 import pl.simplyinc.simplyclime.network.*
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.concurrent.thread
 
 
 private const val ARG_PARAM1 = "position"
@@ -172,7 +168,19 @@ class Weatherinfo : Fragment() {
             val stat = JSONObject(station)
             val now = System.currentTimeMillis()/1000L
             val forecastsall = session.getPref("forecasts").split("|")
-            forecastObj = JSONObject(forecastsall[position])
+
+            try {
+                forecastObj = JSONObject(forecastsall[position])
+            }catch (e:Exception){
+                val forecast = ForecastData()
+                val json = Json(JsonConfiguration.Stable)
+                val addforecast = json.stringify(ForecastData.serializer(), forecast)
+                val save = forecastsall.toMutableList()
+                save[position] = "$addforecast|"
+                val allnew = save.joinToString("|") + "|"
+                session.setPref("forecasts", allnew)
+                forecastObj = JSONObject(addforecast)
+            }
 
             if(forecastObj.getInt("time") < (now-12800)) {
                 station = session.getPref("stations").split("|")[position]
@@ -241,9 +249,15 @@ class Weatherinfo : Fragment() {
         sdf.timeZone = TimeZone.getTimeZone("GMT")
 
         val currentday = sdf.format(Date()).toInt()
+
         val saveday = sdf.format(Date(stationdata.getLong("sunset")*1000L)).toInt()
+
+        val searchval = if(stationdata.getBoolean("gps")){
+            "lat=${stationdata.getString("lat")}&lon=${stationdata.getString("lon")}"
+        }else "q=${stationdata.getString("city")}"
+
         if(saveday != currentday || stationdata.getInt("sunset") == 0){
-           sunset.getNewestSunset(activity!!.applicationContext, stationdata.getString("city"),position,
+           sunset.getNewestSunset(activity!!.applicationContext, searchval, position,
                day_ProgressBar,night_ProgressBar, sunsettime, sunrisetime)
 
             setRefreshTime()

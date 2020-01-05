@@ -1,6 +1,6 @@
 package pl.simplyinc.simplyclime.network
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
@@ -18,8 +18,9 @@ import pl.simplyinc.simplyclime.elements.SessionPref
 import java.lang.Exception
 import java.util.*
 
+@Suppress("IMPLICIT_CAST_TO_ANY")
 class SearchCity(private val act:SearchWeatherActivity, private val searcherror:TextView, private val progressBarSearch:ProgressBar,
-                 private val searchrecycler:RecyclerView,private val tutorial:TextView) {
+                 private val searchrecycler: RecyclerView, private val tutorial:TextView) {
 
     fun searchCity(city:String):Boolean{
 
@@ -33,7 +34,7 @@ class SearchCity(private val act:SearchWeatherActivity, private val searcherror:
                 return false
         }
         progressBarSearch.visibility = View.VISIBLE
-        val url = "http://$server/api/search/$city?lang="+ Locale.getDefault().language
+        val url = "https://$server/search/$city?lang="+ Locale.getDefault().language
 
         val request = StringRequest(
             Request.Method.GET, url, Response.Listener{ res ->
@@ -45,12 +46,12 @@ class SearchCity(private val act:SearchWeatherActivity, private val searcherror:
                 val countries = mutableListOf<String>()
                 val numberstation = mutableListOf<String>()
                 val timezone = mutableListOf<Int>()
+                val ecowitt = mutableListOf<Boolean>()
 
                 if(!response.getBoolean("error")){
 
                     val listweather = response.getJSONArray("locations")
                     val liststations = response.getJSONObject("stations")
-
                     for(i in 0 until listweather.length()){
                         val arr = listweather.getJSONArray(i)
                         countries.add(arr.getString(0))
@@ -58,10 +59,12 @@ class SearchCity(private val act:SearchWeatherActivity, private val searcherror:
                         numberstation.add(arr.getString(2))
                         timezone.add(arr.getInt(3))
                         coords.add(arr.getString(4))
+                        ecowitt.add(arr.getBoolean(5))
                     }
 
                     val adaptersearch = SearchWeatherAdapter(cities, countries, numberstation, timezone, act,
-                        liststations,coords)
+                        liststations, coords, ecowitt)
+
                     searchrecycler.adapter = adaptersearch
                     showtutorial()
 
@@ -162,31 +165,25 @@ class SearchCity(private val act:SearchWeatherActivity, private val searcherror:
                     val coords = mutableListOf<String>()
                     val numberstation = mutableListOf<String>()
                     val timezone = mutableListOf<Int>()
+                    val ecowitt = mutableListOf<Boolean>()
 
                     for(i in 0 until list.length()){
                         val data = list.getJSONObject(i)
-                        val preparestring  = names[i].toLowerCase(Locale.getDefault())
-                            .replace("ą","a")
-                            .replace("ę","e")
-                            .replace("ś","s")
-                            .replace("ń","n")
-                            .replace("ó","o")
-                            .replace("ć","c")
+                        //val preparestring  = names[i].toLowerCase(Locale.getDefault()).normalize()
 
-                        if(names[i].toLowerCase(Locale.getDefault()) == data.getString("name").toLowerCase(Locale.getDefault())
-                            || preparestring == data.getString("name").toLowerCase(Locale.getDefault())) {
                             val sys = data.getJSONObject("sys")
                             timezone.add(sys.getInt("timezone"))
                             countries.add(sys.getString("country"))
                             cities.add(data.getString("name"))
                             numberstation.add(data.getString("id"))
+                            ecowitt.add(false)
 
                             val onecoord = data.getJSONObject("coord")
                             coords.add(onecoord.getString("lat") + "," + onecoord.getString("lon"))
-                        }
+
                     }
                     val adaptersearch = SearchWeatherAdapter(cities, countries, numberstation, timezone, act,
-                        null, coords)
+                        null, coords, ecowitt)
                     searchrecycler.adapter = adaptersearch
 
                 }else {
@@ -199,6 +196,23 @@ class SearchCity(private val act:SearchWeatherActivity, private val searcherror:
             })
 
         VolleySingleton.getInstance(act).addToRequestQueue(request)
+
+    }
+    private fun String.normalize(): String {
+
+        val original = arrayOf("Ą", "ą", "Ć", "ć", "Ę", "ę", "Ł", "ł", "Ń", "ń", "Ó", "ó", "Ś", "ś", "Ź", "ź", "Ż", "ż")
+
+        val normalized = arrayOf("A", "a", "C", "c", "E", "e", "L", "l", "N", "n", "O", "o", "S", "s", "Z", "z", "Z", "z")
+
+
+
+        return this.map { char ->
+
+            val index = original.indexOf(char.toString())
+
+            if (index >= 0) normalized[index] else char
+
+        }.joinToString("")
 
     }
 }

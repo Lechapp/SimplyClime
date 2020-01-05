@@ -1,7 +1,7 @@
 package pl.simplyinc.simplyclime.activities
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -55,7 +55,7 @@ class LogInActivity : AppCompatActivity() {
         login.isEnabled = false
         progressLogin.visibility = View.VISIBLE
 
-        val url = "http://$server/api/user/login"
+        val url = "https://$server/user/login"
 
         val request = object: StringRequest(Method.POST, url, Response.Listener{ res ->
                 val response = JSONObject(res)
@@ -80,12 +80,16 @@ class LogInActivity : AppCompatActivity() {
                     val names = weatherstations.getJSONArray("names")
                     val cities = weatherstations.getJSONArray("cities")
                     val timezone = weatherstations.getJSONArray("timezone")
+                    val tempunit = weatherstations.getJSONArray("tempunit")
+                    val windunit = weatherstations.getJSONArray("windunit")
                     val apikeys = weatherstations.getJSONArray("apikey")
 
 
                     for(i in 0 until ids.length()) {
                         val station = StationsData("mystation", cities.getString(i), timezone.getInt(i), ids.getString(i),
-                            names.getString(i), apikeys.getString(i))
+                            names.getString(i), apikeys.getString(i), false, true, "°C", "km/h",
+                            0,0,0,0.0,0.0, tempunit.getString(i), windunit.getString(i))
+
                         st.append(json.stringify(StationsData.serializer(), station)).append("|")
 
                         val weather = WeatherData()

@@ -12,7 +12,7 @@ import android.graphics.RectF
 import android.graphics.Color.DKGRAY
 import android.graphics.Color.GRAY
 import android.graphics.Paint
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import pl.simplyinc.simplyclime.R
 import kotlin.math.min
 

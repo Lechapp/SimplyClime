@@ -1,17 +1,15 @@
 package pl.simplyinc.simplyclime.adapters
 
 import android.content.Context
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentStatePagerAdapter
-import android.util.Log
-import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
 import pl.simplyinc.simplyclime.elements.SessionPref
 import pl.simplyinc.simplyclime.fragments.AddWeather
 import pl.simplyinc.simplyclime.fragments.Weatherinfo
 
-class PagerAdapter(fm:FragmentManager, val context:Context) :FragmentStatePagerAdapter(fm) {
-
+class PagerAdapter(fm: FragmentManager, val context:Context) :
+    FragmentStatePagerAdapter(fm,BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT ) {
     val session = SessionPref(context)
     var stations = session.getPref("stations").split("|")
     var frags = arrayOfNulls<Weatherinfo>(stations.size+1)

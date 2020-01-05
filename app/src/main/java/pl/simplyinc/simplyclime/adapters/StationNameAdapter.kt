@@ -1,8 +1,8 @@
 package pl.simplyinc.simplyclime.adapters
 
 
-import android.support.v4.view.ViewPager
-import android.support.v7.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.name_row.view.*
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.MainActivity
 
-class StationNameAdapter(private val items: ArrayList<String>,private val act:MainActivity, private val viewPager: ViewPager): RecyclerView.Adapter<ViewHolder>() {
+class StationNameAdapter(private val items: ArrayList<String>,private val act:MainActivity, private val viewPager: ViewPager): androidx.recyclerview.widget.RecyclerView.Adapter<ViewHolder>() {
 
     var activeborder = 0
 
@@ -45,4 +45,4 @@ class StationNameAdapter(private val items: ArrayList<String>,private val act:Ma
         notifyDataSetChanged()
     }
 }
-class ViewHolder(view: View):RecyclerView.ViewHolder(view)
+class ViewHolder(view: View): RecyclerView.ViewHolder(view)

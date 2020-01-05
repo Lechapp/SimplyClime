@@ -2,12 +2,11 @@ package pl.simplyinc.simplyclime.network
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.v4.content.ContextCompat
-import android.util.Log
+import androidx.core.content.ContextCompat
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
-import android.widget.ScrollView
+import android.widget.TextView
 import android.widget.Toast
 import com.android.volley.Request
 import com.android.volley.Response
@@ -24,8 +23,8 @@ import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.openWeatherAPIKey
 import pl.simplyinc.simplyclime.activities.server
-import pl.simplyinc.simplyclime.elements.OnSwipeTouchListener
 import pl.simplyinc.simplyclime.elements.WeatherTools
+import pl.simplyinc.simplyclime.elements.onLeftRightTouchListener
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,28 +32,30 @@ import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
 class ChartRequest(val c:Context, private val mChart:CombinedChart, private val progress:ProgressBar,
-                   private val swipe:ImageView) {
+                   private val swipe:ImageView, private val chartTitle:TextView) {
 
-    fun getChartData(searchvalue:String, tempunit:String, lat:String = "", lon:String = ""){
+    fun getChartData(searchvalue:String, tempunit:String, lat:String = "", lon:String = "", ecowitt:Boolean){
         mChart.visibility = View.GONE
         progress.visibility = View.VISIBLE
         val gps = if(lat != "") "true" else "false"
-        val url = "http://$server/api/weather/$searchvalue?chart=true&gps=$gps&lat=$lat&long=$lon"
+        val url = "https://$server/weather/$searchvalue?chart=true&gps=$gps&lat=$lat&long=$lon&period=hour&periodhour=2"
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
+
+            progress.visibility = View.GONE
 
                 val response = JSONObject(res)
                 if (!response.getBoolean("error")) {
                     mChart.visibility = View.VISIBLE
-                    progress.visibility = View.GONE
+                    chartTitle.visibility = View.VISIBLE
+
                     val wdata = response.getJSONArray("weather")
 
                     val offset = (response.getDouble("countHistoryData") * 0.80f).toFloat()
 
-                    setChart(wdata, tempunit, offset)
+                    setChart(wdata, tempunit, offset, ecowitt)
                 }else{
-                    progress.visibility = View.GONE
-                    Toast.makeText(c, c.getString(R.string.error), Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(c, c.getString(R.string.error), Toast.LENGTH_SHORT).show()
                 }
 
             },
@@ -118,16 +119,20 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
                     onePack.put(rain)
                     val date = (pack.getInt("dt") + timezone) * 1000L
 
-                    val dateFormat = SimpleDateFormat("HH:mm u", Locale.getDefault())
-                    dateFormat.timeZone = TimeZone.getTimeZone("GMT")
+                    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    val dayinweek = SimpleDateFormat("EEEE", Locale(Locale.getDefault().displayLanguage))
 
-                    onePack.put(dateFormat.format(date))
+                    dateFormat.timeZone = TimeZone.getTimeZone("GMT")
+                    dayinweek.timeZone = TimeZone.getTimeZone("GMT")
+                    val textdate = dateFormat.format(date) + " " + dayinweek.format(date)
+                    onePack.put(textdate)
                     weatherData.put(onePack)
                     allforecast.add(forecast)
                 }
 
                 onSuccess(allforecast)
                 mChart.visibility = View.VISIBLE
+                chartTitle.visibility = View.VISIBLE
 
                 setChart(weatherData, tempunit, 0f)
             }else{
@@ -145,7 +150,7 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
 
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun setChart(weatherData:JSONArray, tempunit:String,offset:Float) {
+    private fun setChart(weatherData:JSONArray, tempunit:String,offset:Float, ecowitt:Boolean = false) {
         val xAxis = mChart.xAxis
         val templist: ArrayList<Entry> = ArrayList()
         val rainlist: ArrayList<BarEntry> = ArrayList()
@@ -169,15 +174,21 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
                 countDataPack++
 
                 if (prevHour > hour) {
-                    val dayOfWeek = when (onePack.getString(2).split(" ")[1]) {
-                        "1" -> c.getString(R.string.fmonday)
-                        "2" -> c.getString(R.string.ftuesday)
-                        "3" -> c.getString(R.string.fwednesday)
-                        "4" -> c.getString(R.string.fthursday)
-                        "5" -> c.getString(R.string.ffriday)
-                        "6" -> c.getString(R.string.fsaturday)
-                        "7" -> c.getString(R.string.fsunday)
-                        else -> c.getString(R.string.nextday)
+                    var dayOfWeek = onePack.getString(2).split(" ")[1]
+                    //z mojejgo serwera dostaje numer dnia tygodnia
+                    val checkTypeDay = dayOfWeek.toIntOrNull()
+                    if(checkTypeDay !== null){
+                        dayOfWeek = when(checkTypeDay){
+                            1 -> c.getString(R.string.fmonday)
+                            2 -> c.getString(R.string.ftuesday)
+                            3 -> c.getString(R.string.fwednesday)
+                            4 -> c.getString(R.string.fthursday)
+                            5 -> c.getString(R.string.ffriday)
+                            6 -> c.getString(R.string.fsaturday)
+                            7 -> c.getString(R.string.fsunday)
+                            else -> c.getString(R.string.dayafterday)
+                        }
+
                     }
 
                     val limlinee = LimitLine(((countDataPack * 1f) + limeoffset +1.3f), dayOfWeek)
@@ -189,7 +200,13 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
             }
             val temp = tool.kelvintoTempUnit(onePack.getString(0), tempunit).toFloat()
             templist.add(Entry(i.toFloat(), temp))
-            rainlist.add(BarEntry(i.toFloat(), onePack.getString(1).toFloat()))
+
+            val rainToProcent = if(ecowitt) {
+                100 * (onePack.getString(1).toFloat() / 12)
+            }else{
+                onePack.getString(1).toFloat()
+            }
+            rainlist.add(BarEntry(i.toFloat(), rainToProcent))
             xValsDateLabel.add(onePack.getString(2).split(" ")[0])
         }
 
@@ -251,8 +268,10 @@ class ChartRequest(val c:Context, private val mChart:CombinedChart, private val 
         limline.enableDashedLine(6f,6f,2f)
         xAxis.addLimitLine(limline)
 
-        val listeer = OnSwipeTouchListener(c, mChart, swipe, offset)
+        //val listeer = OnSwipeTouchListener(c, mChart, swipe, offset)
+        val listeer = onLeftRightTouchListener(c, mChart, swipe, offset)
         mChart.setOnTouchListener(listeer)
+
 
     }
 

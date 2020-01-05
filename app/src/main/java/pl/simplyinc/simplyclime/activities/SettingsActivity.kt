@@ -1,7 +1,7 @@
 package pl.simplyinc.simplyclime.activities
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -13,7 +13,9 @@ import pl.simplyinc.simplyclime.elements.SessionPref
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import pl.simplyinc.simplyclime.elements.StationsData
@@ -46,12 +48,27 @@ class SettingsActivity : AppCompatActivity() {
 
         setTempunit()
 
+        setSaveUnits()
+
         setWindunit()
 
         apiKey()
 
+        setTitleEdit()
+
         delete.setOnClickListener {
-            deleteWeather()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(getString(R.string.deleteTitle))
+            val content = "${getString(R.string.deleteContent)} ${objStation.getString("title")}?"
+            builder.setMessage(content)
+            builder.setPositiveButton(getString(R.string.yes)){_, _ ->
+                deleteWeather()
+            }
+
+            builder.setNegativeButton(getString(R.string.no)){_,_->
+            }
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
         }
 
 
@@ -60,7 +77,11 @@ class SettingsActivity : AppCompatActivity() {
             val selectedwindUnit = findViewById<RadioButton>(wtempunit.checkedRadioButtonId).text.toString()
             val selectedtempUnit = findViewById<RadioButton>(stempunit.checkedRadioButtonId).text.toString()
             val newtitle = edittextsname.text.trim().toString()
-
+            val titlelist = listOf<TextView>(room1, room2, room3, room4, room5, room6, room7, room8)
+            val titlelistT = listOf<TextView>(roomT1, roomT2, roomT3, roomT4, roomT5, roomT6, roomT7, roomT8)
+            for (i in 1..8) {
+                titlelistT[i - 1].text = titlelist[i - 1].text
+            }
 
             var newstations = ""
             val newstat = StationsData(
@@ -78,7 +99,19 @@ class SettingsActivity : AppCompatActivity() {
                 objStation.getInt("sunset"),
                 objStation.getInt("sunrise"),
                 objStation.getDouble("lat"),
-                objStation.getDouble("lon"))
+                objStation.getDouble("lon"),
+                objStation.getString("tempunitsave"),
+                objStation.getString("windunitsave"),
+                objStation.getBoolean("ecowitt"),
+                room1.text.toString(),
+                room2.text.toString(),
+                room3.text.toString(),
+                room4.text.toString(),
+                room5.text.toString(),
+                room6.text.toString(),
+                room7.text.toString(),
+                room8.text.toString()
+                )
             val json = Json(JsonConfiguration.Stable)
 
             val newstatstring = json.stringify(StationsData.serializer(), newstat)
@@ -106,6 +139,11 @@ class SettingsActivity : AppCompatActivity() {
             temptextunit.visibility = View.VISIBLE
             stempunit.visibility = View.GONE
 
+            roomedit1.visibility = View.GONE
+            roomedit2.visibility = View.GONE
+            roomedit3.visibility = View.VISIBLE
+            roomedit4.visibility = View.VISIBLE
+
             apply.visibility = View.GONE
         }
     }
@@ -131,6 +169,19 @@ class SettingsActivity : AppCompatActivity() {
     }
 
 
+    private fun setSaveUnits(){
+        if(objStation.getString("type") == "mystation"){
+
+            saveTemp.text = objStation.getString("tempunitsave")
+            saveWind.text = objStation.getString("windunitsave")
+
+        }else{
+            showas.visibility = View.GONE
+            saveas.visibility = View.GONE
+            settingsunits.visibility = View.GONE
+        }
+    }
+
     private fun setTitle(){
 
         snamee.text = objStation.getString("title")
@@ -141,6 +192,34 @@ class SettingsActivity : AppCompatActivity() {
             editsname.visibility = View.GONE
             apply.visibility = View.VISIBLE
         }
+
+        if(objStation.getBoolean("privstation")) {
+            val titlelist = listOf<TextView>(room1, room2, room3, room4, room5, room6, room7, room8)
+            val titlelistT = listOf<TextView>(roomT1, roomT2, roomT3, roomT4, roomT5, roomT6, roomT7, roomT8)
+            for (i in 1..8) {
+                if (objStation.getString("title${i}") != "") {
+                    titlelist[i - 1].text = objStation.getString("title${i}")
+                    titlelistT[i - 1].text = objStation.getString("title${i}")
+                } else {
+                    titlelist[i - 1].text = "${getString(R.string.room)}${i}"
+                    titlelistT[i - 1].text = "${getString(R.string.room)}${i}"
+                }
+            }
+        }else{
+            changeroomname.visibility = View.GONE
+        }
+    }
+
+    private fun setTitleEdit(){
+
+        editroom.setOnClickListener {
+            roomedit1.visibility = View.VISIBLE
+            roomedit2.visibility = View.VISIBLE
+            roomedit3.visibility = View.GONE
+            roomedit4.visibility = View.GONE
+            apply.visibility = View.VISIBLE
+        }
+
     }
 
     private fun setTempunit(){
@@ -198,7 +277,8 @@ class SettingsActivity : AppCompatActivity() {
 
         if(objStation.getString("type") == "mystation"){
             val stationid = objStation.getString("searchvalue")
-            DeleteWeaterStation().deleteStation(applicationContext, stationid,position, progressDelete, delete)
+            val apikey = objStation.getString("apikey")
+            DeleteWeaterStation().deleteStation(applicationContext, stationid,position, progressDelete, delete, apikey)
         }else{
 
             var newstations = ""

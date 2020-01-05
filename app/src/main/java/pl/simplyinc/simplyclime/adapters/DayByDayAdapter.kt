@@ -1,16 +1,18 @@
 package pl.simplyinc.simplyclime.adapters
 
 import android.content.Context
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.RecyclerView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.SuperscriptSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
+import android.widget.TextView
 import kotlinx.android.synthetic.main.one_day_row.view.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -21,8 +23,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, val station:String, private val recyc:RecyclerView,
-                      val forecast:RecyclerView, private val pb:ProgressBar, private val detail:Boolean, val onlyforeacst:Boolean = false): RecyclerView.Adapter<ViewHolder>() {
+class DayByDayAdapter(val context:Context, val weather:MutableList<JSONArray>, val station:String, private val recyc: androidx.recyclerview.widget.RecyclerView,
+                      val forecast: RecyclerView, private val pb:ProgressBar, private val detail:Boolean, val onlyforeacst:Boolean = false,
+                      val sunset:Int = 0, val sunrise: Int = 0, val timezone: Int = 0): RecyclerView.Adapter<ViewHolder>() {
 
     lateinit var tunit:String
     lateinit var wunit:String
@@ -41,6 +44,7 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
         val w = if(onlyforeacst) {
                 weather[weather.size-position-1]
             }else weather[position]
@@ -69,20 +73,55 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
         val icon = holder.itemView.dayicon
         val batticon = holder.itemView.daybatteryimg
         val batt = holder.itemView.daybatterylvl
+        val unitGrid = holder.itemView.unitGridd
+        val additionalTemp = holder.itemView.additionalTempp
+
+        val title = listOf<TextView>(
+            holder.itemView.titlee1,
+            holder.itemView.titlee2,
+            holder.itemView.titlee3,
+            holder.itemView.titlee4,
+            holder.itemView.titlee5,
+            holder.itemView.titlee6,
+            holder.itemView.titlee7,
+            holder.itemView.titlee8
+        )
+        val humi = listOf<TextView>(
+            holder.itemView.humm1,
+            holder.itemView.humm2,
+            holder.itemView.humm3,
+            holder.itemView.humm4,
+            holder.itemView.humm5,
+            holder.itemView.humm6,
+            holder.itemView.humm7,
+            holder.itemView.humm8
+        )
+        val tempp = listOf<TextView>(
+            holder.itemView.tempp1,
+            holder.itemView.tempp2,
+            holder.itemView.tempp3,
+            holder.itemView.tempp4,
+            holder.itemView.tempp5,
+            holder.itemView.tempp6,
+            holder.itemView.tempp7,
+            holder.itemView.tempp8
+        )
+
+
 
         val dateformat:String = when(detail) {
             true -> "HH:mm dd.MM"
             else -> "dd.MM"
         }
 
-        val weatherdate = SimpleDateFormat(dateformat, Locale.getDefault())
+        val weatherdate = SimpleDateFormat(dateformat, Locale(Locale.getDefault().displayLanguage))
         weatherdate.timeZone = TimeZone.getTimeZone("GMT")
 
-        val dayinweek = SimpleDateFormat("u", Locale.getDefault())
+        val dayinweek = SimpleDateFormat("EEEE", Locale(Locale.getDefault().displayLanguage))
         dayinweek.timeZone = TimeZone.getTimeZone("GMT")
-        val day = dayinweek.format(Date(w.getInt(11)*1000L))
+        val dayOfWeek = dayinweek.format(Date(w.getInt(11)*1000L))
 
-        val dayOfWeek = when (day) {
+        /*val dayOfWeek = when (day) {
             "1" -> context.getString(R.string.fmonday)
             "2" -> context.getString(R.string.ftuesday)
             "3" -> context.getString(R.string.fwednesday)
@@ -91,7 +130,7 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
             "6" -> context.getString(R.string.fsaturday)
             "7" -> context.getString(R.string.fsunday)
             else -> context.getString(R.string.nextday)
-        }
+        }*/
         val alldate = "${weatherdate.format(Date(w.getInt(11)*1000L))}, $dayOfWeek"
         date.text = alldate
 
@@ -107,8 +146,8 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
         }
 
         if(w.getString(12) != "null"){
-            val tempmax = tool.kelvintoTempUnit(w.getString(13), tunit)
-            val tempmin = tool.kelvintoTempUnit(w.getString(12), tunit)
+            val tempmax = tool.roundto(tool.kelvintoTempUnit(w.getString(13), tunit))
+            val tempmin = tool.roundto(tool.kelvintoTempUnit(w.getString(12), tunit))
             val tempouttt = tool.kelvintoTempUnit(w.getString(0), tunit)
 
             val t:String = when(detail){
@@ -143,13 +182,19 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
         }else allhumi.visibility = View.GONE
 
         if(w.getString(4) != "null") {
-            val t = tool.roundto(w.getString(4)) + " HPa"
+            val t = tool.roundto(w.getString(4)) + " hPa"
             press.text = t
         }else allpress.visibility = View.GONE
 
         if(w.getString(5) != "null") {
-            val t = tool.roundto(w.getString(5))+"%"
+            val unit = if(st.has("ecowitt") && st.getBoolean("ecowitt")){
+                " mm"
+            }else{
+                "%"
+            }
+            val t = tool.roundto(w.getString(5)) + unit
             rain.text = t
+
         }else allrain.visibility = View.GONE
 
         if(w.getString(6) != "null") {
@@ -180,6 +225,7 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
                 val colorid = tool.pm25(w.getString(8))
                 airpol25.background = ContextCompat.getDrawable(context,colorid)
                 val indexgorny = tool.roundto(w.getString(8)) + " " + context.getString(R.string.pollutionuit)
+                Log.d("pm25test", colorid.toString())
 
                 val superscriptSpan = SuperscriptSpan()
                 val builder = SpannableStringBuilder(indexgorny)
@@ -196,8 +242,21 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
 
 
         if(w.getString(9) != "null") {
-            val t = tool.roundto(w.getString(9)) + "%"
-            insol.text = t
+            insol.text = if(st.has("ecowitt") && st.getBoolean("ecowitt")){
+                val pom = tool.roundto(w.getString(9)) + " W/m2"
+                val superscriptSpan = SuperscriptSpan()
+                val builder = SpannableStringBuilder(pom)
+                builder.setSpan(
+                    superscriptSpan,
+                    pom.length-1,
+                    pom.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                builder
+            }else{
+                tool.roundto(w.getString(9)) + "%"
+            }
+
         }else allinsol.visibility = View.GONE
 
         val temp:String = tool.roundto(when(detail){
@@ -209,14 +268,59 @@ class DayByDayAdapter(val context:Context,val weather:MutableList<JSONArray>, va
             tool.weatherIconOpenWeather(
                 w.getString(14),
                 w.getString(15),
-                0,0,0,
-                true, w.getString(5))
+                sunrise,sunset,timezone,
+                true, w.getString(5),
+                w.getInt(11))
         } else {
             tool.weathericon(
                 temp, tool.roundto(w.getString(5)), tool.roundto(w.getString(9)),
-                0, 0, 0, true
+                sunrise, sunset, timezone, st.getBoolean("ecowitt"), true
             )
         }
+
+
+        //15-22 temp i+14
+        //23-30 humidity i+22
+
+        var anyone = false
+
+        if(st.getBoolean("privstation")) {
+            for (i in 1..8) {
+                if ((w.getString(i + 22) != "null" && w.getString(i + 22) != "")
+                    || (w.getString(i + 14) != "null") && w.getString(i + 14) != ""
+                ) {
+
+                    unitGrid.text = st.getString("tempunit")
+                    anyone = true
+                    if (st.getString("title${i}") != "") {
+                        title[i - 1].text = st.getString("title${i}")
+
+                    } else title[i - 1].text = "${context.getString(R.string.room)}${i}"
+
+                    if (w.getString(i + 22) != "null") {
+                        humi[i - 1].text = tool.roundto(w.getString(i + 22))
+
+                    } else humi[i - 1].visibility = View.GONE
+
+                    if (w.getString(i + 14) != "null") {
+                        tempp[i - 1].text = tool.kelvintoTempUnit(
+                                w.getString(i + 14),
+                                st.getString("tempunit")
+                                )
+
+                    } else tempp[i - 1].visibility = View.GONE
+
+                } else {
+                    tempp[i - 1].visibility = View.GONE
+                    humi[i - 1].visibility = View.GONE
+                    title[i - 1].visibility = View.GONE
+                }
+            }
+        }
+        if(anyone){
+            additionalTemp.visibility = View.VISIBLE
+        }
+
         icon.setImageResource(iconimg)
 
         if(!detail) {

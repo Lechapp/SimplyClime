@@ -1,8 +1,7 @@
 package pl.simplyinc.simplyclime.adapters
 
 import android.content.Context
-import android.support.v7.widget.RecyclerView
-import android.util.Log
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,13 +12,15 @@ import pl.simplyinc.simplyclime.elements.WeatherTools
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ForecastAdapter(val context: Context, val forecast:JSONObject, val tempunit:String):RecyclerView.Adapter<ViewHolder>() {
+class ForecastAdapter(val context: Context, val forecast:JSONObject, val tempunit:String):
+    RecyclerView.Adapter<ViewHolder>() {
 
-    val time = forecast.getInt("time")
-    private val weatherdate = SimpleDateFormat("u|dd", Locale(Locale.getDefault().displayLanguage))
-    val day = weatherdate.format(Date(time*1000L)).split("|")
-    var dayofWeek = (day[0]).toInt()
-    var dayofMonth = (day[1]).toInt()
+    var time = forecast.getInt("time")
+
+    private val weatherdate = SimpleDateFormat("dd", Locale(Locale.getDefault().displayLanguage))
+    private val weatherDay = SimpleDateFormat("EEEE", Locale(Locale.getDefault().displayLanguage))
+
+
     private val lastday = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
     val tool = WeatherTools()
 
@@ -38,32 +39,18 @@ class ForecastAdapter(val context: Context, val forecast:JSONObject, val tempuni
         val temp = holder.itemView.forecasttemp
         val container = holder.itemView.daycontainer
 
-        val dayofWeekText:String = when(dayofWeek){
-            1 -> context.getString(R.string.monday)
-            2 -> context.getString(R.string.tuesday)
-            3 -> context.getString(R.string.wednesday)
-            4 -> context.getString(R.string.thursday)
-            5 -> context.getString(R.string.friday)
-            6 -> context.getString(R.string.saturday)
-            7 -> context.getString(R.string.sunday)
-            else -> ""
-        }
+        val dayofWeek = weatherDay.format( Date(time*1000L)).substring(0,3)
+        val dayofMonth = weatherdate.format( Date(time*1000L)).toInt()
 
-        nameday.text = "$dayofWeekText $dayofMonth"
-        dayofWeek++
-        dayofMonth++
-
-        if(dayofMonth == (lastday+1))
-            dayofMonth = 1
-
-        if(dayofWeek == 8)
-            dayofWeek = 1
+        nameday.text = "$dayofWeek $dayofMonth"
+        time += (24*3600)
 
         try {
             val dayweather = JSONObject(forecast.getString("day$position"))
             iconweather.setImageResource(dayweather.getInt("weathericon"))
 
-            val tempconvert = tool.kelvintoTempUnit(dayweather.getString("tempmax"), tempunit)+ "/" + tool.kelvintoTempUnit(dayweather.getString("tempmin"), tempunit) + " $tempunit"
+            val tempconvert = tool.roundto(tool.kelvintoTempUnit(dayweather.getString("tempmax"), tempunit)) + "/" +
+                    tool.roundto(tool.kelvintoTempUnit(dayweather.getString("tempmin"), tempunit)) + " $tempunit"
             temp.text = tempconvert
 
         }catch (e:Exception){

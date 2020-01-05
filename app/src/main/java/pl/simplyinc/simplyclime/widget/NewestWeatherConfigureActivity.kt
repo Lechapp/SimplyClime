@@ -5,8 +5,8 @@ import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
@@ -70,7 +70,8 @@ class NewestWeatherConfigureActivity : Activity() {
         widgetlayout = inflater.inflate(R.layout.newest_weather, container)
 
 
-        mylocations.layoutManager = LinearLayoutManager(this)
+        mylocations.layoutManager =
+            androidx.recyclerview.widget.LinearLayoutManager(this)
         mylocations.adapter = WidgetChooseAdapter(this,title)
         if(title.size == 0){
             addwidget.text = getString(R.string.addcity)

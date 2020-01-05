@@ -4,7 +4,7 @@ import kotlinx.android.synthetic.main.street_row.view.*
 import org.json.JSONArray
 import android.content.Context
 import android.content.Intent
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -18,7 +18,7 @@ import pl.simplyinc.simplyclime.elements.StationsData
 import pl.simplyinc.simplyclime.elements.WeatherData
 
 
-class SearchStreetAdapter(val context:Context,private val liststations:JSONArray, val city:String): RecyclerView.Adapter<ViewHolder>() {
+class SearchStreetAdapter(val context:Context,private val liststations:JSONArray, val city:String): androidx.recyclerview.widget.RecyclerView.Adapter<ViewHolder>() {
 
     private val session = SessionPref(context)
 
@@ -45,7 +45,10 @@ class SearchStreetAdapter(val context:Context,private val liststations:JSONArray
 
             val json = Json(JsonConfiguration.Stable)
 
-            val station = StationsData("station", city, dataArray.getInt(3),dataArray.getString(0),city + " " + dataArray.getString(1))
+            val station = StationsData("station", city, dataArray.getInt(3),dataArray.getString(0),
+                city + " " + dataArray.getString(1), "", false, true, "°C",
+                "km/h", 0,0,0,0.0, 0.0, "", "",
+                dataArray.getBoolean(4))
             val selectedcity = json.stringify(StationsData.serializer(), station) + "|"
 
             val weather = WeatherData()
@@ -62,7 +65,7 @@ class SearchStreetAdapter(val context:Context,private val liststations:JSONArray
                 session.setPref("forecasts", activeforecasts + addedforecast)
 
                 val intent = Intent(context, MainActivity::class.java)
-                intent.putExtra("setweather", activeweathers.split("|").size)
+                intent.putExtra("setweather", activeweathers.split("|").size-1)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
             }

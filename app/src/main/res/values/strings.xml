@@ -30,16 +30,16 @@
     <string name="wrongcity">City not found</string>
     <string name="flag">Flag</string>
     <string name="downarrow">Down arrow</string>
-    <string name="logged">Tap to log out</string>
-    <string name="notlogg">Tap to log in</string>
+    <string name="logged">Log out</string>
+    <string name="notlogg">Log in</string>
     <string name="alreadyadd">This location is already added</string>
     <string name="buldingnumber">Building number</string>
-    <string translatable="false" name="kmh">km/h</string>
-    <string translatable="false" name="mph">mph</string>
-    <string translatable="false" name="ms">m/s</string>
-    <string translatable="false" name="Celsjusz">°C</string>
-    <string translatable="false" name="Kelvin">K</string>
-    <string translatable="false" name="Fahrenheit">°F</string>
+    <string name="kmh" translatable="false">km/h</string>
+    <string name="mph" translatable="false">mph</string>
+    <string name="ms" translatable="false">m/s</string>
+    <string name="Celsjusz" translatable="false">°C</string>
+    <string name="Kelvin" translatable="false">K</string>
+    <string name="Fahrenheit" translatable="false">°F</string>
     <string name="windunit">Wind speed measurement unit</string>
     <string name="tempunit">Temperature measurement unit</string>
     <string name="createstation">Create a new weather station</string>
@@ -54,8 +54,8 @@
     <string name="add_widget">Add widget</string>
     <string name="emptyplaces">No locations added, you can add them in the application</string>
     <string name="chooseplace">Choose a location</string>
-    <string translatable="false" name="tempin">Temp in</string>
-    <string translatable="false" name="tempout">Temp out</string>
+    <string name="tempin" translatable="false">Temp in</string>
+    <string name="tempout" translatable="false">Temp out</string>
     <string name="humidityin">Humidity in</string>
     <string name="humidityout">Humidity out</string>
     <string name="pressure">Pressure</string>
@@ -73,7 +73,7 @@
     <string name="in">In</string>
     <string name="out">Out</string>
     <string name="airpollution">Air pollution</string>
-    <string translatable="false" name="pollutionuit">µg/m3</string>
+    <string name="pollutionuit" translatable="false">µg/m3</string>
     <string name="lastupdate">Last data from</string>
     <string name="transparenty">Background transparency</string>
     <string name="theme">Theme</string>
@@ -120,4 +120,20 @@
     <string name="fromcloud">From professional weather stations</string>
     <string name="howitworks">How it works?</string>
     <string name="exactlocation">Click on flag to see the exact location</string>
+    <string name="ecowitt">Ecowitt station</string>
+    <string name="title">Title</string>
+    <string name="temp" translatable="false">Temp.</string>
+    <string name="humidity">Hum.</string>
+    <string name="chartTitle">Outside temperature and rainfall</string>
+    <string name="room">Room</string>
+    <string name="settingsroom">Rename additional temperature and humidity measurements</string>
+    <string name="sendas">Send data in units</string>
+    <string name="showas">Display data in units</string>
+    <string name="deleteTitle">Delete station</string>
+    <string name="deleteContent">Are you sure you want to delete station - </string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -31,7 +31,8 @@
                     android:resource="@xml/newest_weather_info"/>
         </receiver>
 
-        <activity android:name=".widget.NewestWeatherConfigureActivity">
+        <activity android:name=".widget.NewestWeatherConfigureActivity"
+                android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>

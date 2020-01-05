@@ -1,8 +1,8 @@
 package pl.simplyinc.simplyclime.network
 
 import android.content.Context
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
@@ -22,9 +22,9 @@ class DayByDayRequest {
     private lateinit var adapt:DayByDayAdapter
     var busy = false
 
-    fun getWeather(context: Context, station:String, recycler:RecyclerView, forecast:RecyclerView, prog:ProgressBar, offset:String = "null", dateto:String = ""):Boolean {
+    fun getWeather(context: Context, station:String, recycler: RecyclerView, forecast: RecyclerView, prog:ProgressBar, offset:String = "null", dateto:String = ""):Boolean {
 
-        var detail = false
+        var detail = true
         val stationData = JSONObject(station)
 
         if(offset == "null") {
@@ -39,29 +39,36 @@ class DayByDayRequest {
         else busy = !busy
 
         prog.visibility = View.VISIBLE
-        recycler.visibility = View.GONE
+        //recycler.visibility = View.GONE
 
         val offs = when(offset) {
             "null" -> "period=day"
             else -> {
-                detail = true
                 "offset=$offset&dateTo=$dateto&dateFrom=02-06-2019"
             }
         }
 
-        if(!::adapt.isInitialized)
-            adapt = DayByDayAdapter(context, cacheWeatherData, station, recycler, forecast, prog, detail)
-
-        val url = "http://$server/api/weather/"+ stationData.getString("searchvalue")+"?$offs"
+        if(!::adapt.isInitialized) {
+            detail = !(stationData.getBoolean("privstation") && offset == "null")
+            adapt = DayByDayAdapter(
+                context,
+                cacheWeatherData,
+                station,
+                recycler,
+                forecast,
+                prog,
+                detail
+            )
+        }
+        val url = "https://$server/weather/"+ stationData.getString("searchvalue")+"?$offs"
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 
                 prog.visibility = View.GONE
-                recycler.visibility = View.VISIBLE
+                //recycler.visibility = View.VISIBLE
 
                 val r = JSONObject(res)
                 if (!r.getBoolean("error")) {
-
                     val weathers = r.getJSONArray("weather")
 
                     for (i in 0 until weathers.length()) {

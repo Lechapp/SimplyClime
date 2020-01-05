@@ -5,6 +5,7 @@
     <color name="colorPrimaryaplha">#660099ff</color>
     <color name="none">#00000000</color>
     <color name="grey">#aaaaaa</color>
+    <color name="greybutton">#c5c5c5</color>
     <color name="blackalpha">#4f000000</color>
     <color name="blackalphadark">#99000000</color>
     <color name="blackfont">#222222</color>
@@ -20,8 +21,8 @@
     <color name="good">#93be00</color>
     <color name="moderate">#dfb904</color>
     <color name="sufficient">#e48100</color>
-    <color name="bad">#e40000</color>
-    <color name="verybad">#aa0000</color>
+    <color name="bad">#aa0000</color>
+    <color name="verybad">#e40000</color>
 
     <color name="sunrise">#ffeb3b</color>
     <color name="moon">#e3e3e3</color>

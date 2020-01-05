@@ -1,5 +1,6 @@
 package pl.simplyinc.simplyclime.elements
 
+import android.util.Log
 import pl.simplyinc.simplyclime.R
 import java.lang.Exception
 import java.text.SimpleDateFormat
@@ -9,7 +10,7 @@ import kotlin.math.roundToInt
 class WeatherTools {
 
 
-    fun weathericon(tempout:String, rainfall:String, insolation:String, sunrise:Int, sunset:Int, timezone:Int, black:Boolean):Int{
+    fun weathericon(tempout:String, rainfall:String, insolation:String, sunrise:Int, sunset:Int, timezone:Int, ecowitt:Boolean, black:Boolean):Int{
 
         var weathericon = when (black) {
             true -> R.drawable.cloud_sun_w
@@ -18,6 +19,9 @@ class WeatherTools {
         var rain = -1
         try{
             rain = rainfall.toInt()
+            //to%
+            if(ecowitt)
+                rain = 100*(rain/12.0).roundToInt()
         }catch (e: Exception){}
 
         var temp = -1
@@ -28,6 +32,10 @@ class WeatherTools {
         var insol = -1
         try{
             insol = insolation.toInt()
+            //to %
+            if(ecowitt)
+                insol = 100*(insol/400.0).roundToInt()
+
         }catch (e: Exception){}
 
         val systemtime = System.currentTimeMillis()/1000L
@@ -242,7 +250,7 @@ class WeatherTools {
         var airpollution10 = 0
 
         try {
-            airpollution10 = value.toInt()
+            airpollution10 = value.toFloat().roundToInt()
         }catch (e: Exception){}
 
         return when(airpollution10){
@@ -261,7 +269,7 @@ class WeatherTools {
         var airpollution25 = 0
 
         try {
-            airpollution25 = value.toInt()
+            airpollution25 = value.toFloat().roundToInt()
         }catch (e: Exception){}
 
         return when(airpollution25){
@@ -282,7 +290,7 @@ class WeatherTools {
         var valu = "null"
         try{
             val w = value.toDouble()
-            valu = ((w*10).roundToInt()/10).toString()
+            valu = (w.roundToInt()).toString()
 
         }catch (e: Exception){}
         return valu
@@ -303,7 +311,7 @@ class WeatherTools {
                     else -> numb
                 }
 
-                return ((temp * 10).roundToInt() / 10).toString()
+                return ((temp * 10).roundToInt() / 10.0).toString()
             }catch (e: Exception){ }
 
             return "null"
@@ -324,7 +332,7 @@ class WeatherTools {
                     else -> numb
                 }
 
-                return ((windspeed * 10).roundToInt() / 10).toString()
+                return ((windspeed * 10).roundToInt() / 10.0).toString()
             }catch (e: Exception){}
         }
 
@@ -685,30 +693,33 @@ class WeatherTools {
         return background
     }
 
-    fun weatherIconOpenWeather(mainn:String,descriptionn: String, sunrise:Int, sunset:Int, timezone:Int, black:Boolean, rainn:String):Int{
+    fun weatherIconOpenWeather(mainn:String,descriptionn: String, sunrise:Int, sunset:Int, timezone:Int, black:Boolean, rainn:String, timeDate:Int = 0):Int{
 
         val icon:Int
         val systemtime = System.currentTimeMillis()/1000L
         val systemtimezone = (TimeZone.getDefault().rawOffset + TimeZone.getDefault().dstSavings)/1000L
-        val weathertimetoday = systemtime - systemtimezone + timezone
+        val weathertimetoday = if(timeDate == 0){
+            systemtime - systemtimezone + timezone
+        }else{
+            timeDate.toLong()
+        }
+        val subDay = SimpleDateFormat("D", Locale.getDefault())
+        subDay.timeZone = TimeZone.getTimeZone("GMT")
 
-        var main:String = mainn
-        var description:String = descriptionn
+        val today = subDay.format(Date(weathertimetoday * 1000L)).toInt()
+        val sunriseDay = subDay.format(Date(sunrise*1000L)).toInt()
+        val substractDay = today - sunriseDay
+        val main:String = mainn
+        val description:String = descriptionn
+        var rain = 0
 
         if(rainn != "null") {
             try{
-                val rain = rainn.toInt()
-                if(rain < 5){
-                    main = "Clouds"
-                    description = "scattered clouds"
-                }else if(rain < 11){
-                    main = "Clouds"
-                    description = "all clouds"
-                }
+                rain = rainn.toInt()
             }catch (e:Exception){ }
         }
 
-        if((weathertimetoday > sunrise || weathertimetoday < sunset)){
+        if((weathertimetoday - (substractDay * 3600*24) in sunrise-3000..sunset+3000)){
             when(main){
                 "Clear" -> {
                     icon = when (black) {
@@ -740,22 +751,36 @@ class WeatherTools {
                 }
                 "Rain", "Drizzle", "Thunderstorm" -> {
                     icon = if(description.contains("light")) {
-                         when (black) {
-                             true -> R.drawable.cloud_sun_little_rain_w
-                             false -> R.drawable.cloud_sun_little_rain_b
-                         }
+                            if(rain < 9){
+                                when (black) {
+                                    true -> R.drawable.cloud_sun_w
+                                    false -> R.drawable.cloud_sun_b
+                                }
+                            }else {
+                                when (black) {
+                                    true -> R.drawable.cloud_sun_little_rain_w
+                                    false -> R.drawable.cloud_sun_little_rain_b
+                                }
+                            }
                         }else {
-                        when (black) {
-                            true -> R.drawable.cloud_sun_rain_w
-                            false -> R.drawable.cloud_sun_rain_b
+                            when (black) {
+                                true -> R.drawable.cloud_sun_rain_w
+                                false -> R.drawable.cloud_sun_rain_b
+                            }
                         }
-                    }
                 }
                 "Snow" -> {
-                    icon = when (black) {
-                        true -> R.drawable.cloud_snow_w
-                        false -> R.drawable.cloud_snow_b
-                    }
+                    icon = if(rain < 9){
+                            when (black) {
+                                true -> R.drawable.cloud_w
+                                false -> R.drawable.cloud_b
+                            }
+                        }else{
+                             when (black) {
+                                true -> R.drawable.cloud_snow_w
+                                false -> R.drawable.cloud_snow_b
+                            }
+                        }
                 }
                 else -> {
                     icon = when (black) {
@@ -780,9 +805,16 @@ class WeatherTools {
                 }
                 "Rain", "Drizzle", "Thunderstorm" -> {
                     icon = if(description.contains("light")) {
-                        when (black) {
-                            true -> R.drawable.cloud_moon_little_rain_w
-                            false -> R.drawable.cloud_moon_little_rain_b
+                        if(rain < 9){
+                            when (black) {
+                                true -> R.drawable.cloud_moon_w
+                                false -> R.drawable.cloud_moon_b
+                            }
+                        }else {
+                            when (black) {
+                                true -> R.drawable.cloud_moon_little_rain_w
+                                false -> R.drawable.cloud_moon_little_rain_b
+                            }
                         }
                     }else{
                         when (black) {
@@ -792,10 +824,17 @@ class WeatherTools {
                     }
                 }
                 "Snow" -> {
-                    icon = when (black) {
-                        true -> R.drawable.cloud_moon_snow_w
-                        false -> R.drawable.cloud_moon_snow_b
-                    }
+                    icon = if(rain < 9){
+                                when (black) {
+                                    true -> R.drawable.cloud_moon_w
+                                    false -> R.drawable.cloud_moon_b
+                                }
+                            }else{
+                                when (black) {
+                                    true -> R.drawable.cloud_moon_snow_w
+                                    false -> R.drawable.cloud_moon_snow_b
+                                }
+                        }
                 }
                 else -> {
                     icon = when (black) {

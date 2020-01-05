@@ -1,14 +1,18 @@
 package pl.simplyinc.simplyclime.fragments
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import androidx.core.content.PermissionChecker
+import androidx.core.content.PermissionChecker.checkCallingOrSelfPermission
 import kotlinx.android.synthetic.main.fragment_weatherinfo.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -60,10 +64,14 @@ class Weatherinfo : Fragment() {
 
         if(weatherall.size-1 > position){
             val stationdata = JSONObject(station)
-            val chart = ChartRequest(activity!!.applicationContext, weatherchart, chartProgress, swipetutorial)
+            val chart = ChartRequest(activity!!.applicationContext, weatherchart, chartProgress, swipetutorial, charttitle)
             var isChartSet = false
 
-            forecastrecycler.layoutManager = LinearLayoutManager(activity!!.applicationContext, LinearLayoutManager.HORIZONTAL, false)
+            forecastrecycler.layoutManager = LinearLayoutManager(
+                    activity!!.applicationContext,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
             val weatherdata = JSONObject(weather)
 
             if(stationdata.getInt("refreshtime") + weatherdata.getInt("updatedtime") <= unixTime) {
@@ -82,7 +90,7 @@ class Weatherinfo : Fragment() {
                         false,
                         chart,
                         this)
-                    gps.getLocation()
+                    getLocation(gps)
                     isChartSet = true
                 }else {
                     if(stationdata.getBoolean("privstation"))
@@ -105,7 +113,7 @@ class Weatherinfo : Fragment() {
                         true,
                         chart,
                         this)
-                    gps.getLocation()
+                    getLocation(gps)
                     isChartSet = true
                 }else
                     update.setWeather(weatherdata, stationdata, false)
@@ -120,9 +128,16 @@ class Weatherinfo : Fragment() {
 
             if(!isChartSet) {
                 if(stationdata.getBoolean("privstation")) {
+                    val ecowitt = if(stationdata.has("ecowitt")){
+                        stationdata.getBoolean("ecowitt")
+                    }else {
+                        false
+                    }
                     chart.getChartData(
                         stationdata.getString("searchvalue"),
-                        stationdata.getString("tempunit")
+                        stationdata.getString("tempunit"),
+                        "","",
+                        ecowitt
                     )
                 }else{
                     chart.getChartDataOpenWeather(
@@ -164,7 +179,7 @@ class Weatherinfo : Fragment() {
     private fun setClickDayByDay(){
 
         daybyday.setOnClickListener {
-
+            charttitle.visibility = View.GONE
             val stat = JSONObject(station)
             val now = System.currentTimeMillis()/1000L
             val forecastsall = session.getPref("forecasts").split("|")
@@ -182,7 +197,7 @@ class Weatherinfo : Fragment() {
                 forecastObj = JSONObject(addforecast)
             }
 
-            if(forecastObj.getInt("time") < (now-12800)) {
+            if(forecastObj.getInt("time") < (now - stat.getInt("refreshtime"))) {
                 station = session.getPref("stations").split("|")[position]
                 dayByDayRequest = DayByDayRequest()
                 val forecast = ForecastRequest(activity!!.applicationContext, position, stat.getString("tempunit"))
@@ -191,6 +206,7 @@ class Weatherinfo : Fragment() {
                 forecastrecycler.adapter =
                     ForecastAdapter(activity!!.applicationContext, forecastObj, stat.getString("tempunit"))
             }
+            forecastrecycler.visibility = View.VISIBLE
             if(stat.getBoolean("privstation")) {
                 dayByDayRequest.getWeather(
                     activity!!.applicationContext,
@@ -200,7 +216,7 @@ class Weatherinfo : Fragment() {
                     progressWeatherDay
                 )
             }else{
-                setDayByDayForecastOpenWeather()
+                setDayByDayForecastOpenWeather(stat.getInt("sunset"), stat.getInt("sunrise"), stat.getInt("timezone"))
             }
             allmain.visibility = View.GONE
             weathercontainer.visibility = View.GONE
@@ -215,7 +231,7 @@ class Weatherinfo : Fragment() {
             setDayByDayForecastOpenWeather()
     }
 
-    private fun setDayByDayForecastOpenWeather() {
+    private fun setDayByDayForecastOpenWeather(sunset:Int = 0, sunrise:Int = 0, timezone:Int = 0) {
         if (forecastWeatherData.size > 10) {
             val adapt = DayByDayAdapter(
                 context!!,
@@ -225,7 +241,8 @@ class Weatherinfo : Fragment() {
                 forecastrecycler,
                 progressWeatherDay,
                 true,
-                true
+                true,
+                sunset, sunrise, timezone
             )
             daybydayrec.adapter = adapt
             daybydayrec.visibility = View.VISIBLE
@@ -234,6 +251,7 @@ class Weatherinfo : Fragment() {
 
     fun hideDayByDay():Boolean{
         return if(dayfragment != null && dayfragment.visibility == View.VISIBLE) {
+            charttitle.visibility = View.VISIBLE
             dayfragment.visibility = View.GONE
             allmain.visibility = View.VISIBLE
             weathercontainer.visibility = View.VISIBLE
@@ -316,4 +334,30 @@ class Weatherinfo : Fragment() {
        bgweather.background = ContextCompat.getDrawable(context!!, img)
 
     }
+
+    private var permission = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    private val PERMISION_REQUEST = 10
+
+    private fun getLocation(gps:GpsLocation){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(checkPermission(permission)){
+                gps.getLocation()
+            }else{
+                requestPermissions(permission, PERMISION_REQUEST)
+            }
+        }else{
+            gps.getLocation()
+        }
+    }
+
+    private fun checkPermission(perarray:Array<String>):Boolean{
+        var success = true
+
+        for (i in perarray.indices){
+            if(checkCallingOrSelfPermission(context!!,perarray[i]) == PermissionChecker.PERMISSION_DENIED)
+                success = false
+        }
+        return success
+    }
+
 }

@@ -25,8 +25,8 @@
     <string name="emptysearch">Brak stacji pogodowych w tym mieście</string>
     <string name="flag">Flaga</string>
     <string name="downarrow">Strzałka w dół</string>
-    <string name="logged">Stuknij aby się wylogować</string>
-    <string name="notlogg">Stuknij aby się zalogować</string>
+    <string name="logged">Wyloguj</string>
+    <string name="notlogg">Zaloguj</string>
     <string name="alreadyadd">Ta lokalizacja jest już dodana</string>
     <string name="buldingnumber">Numer budynku</string>
     <string name="windunit">Jednostka pomiaru prędkości wiatru</string>
@@ -107,4 +107,16 @@
     <string name="howitworks">Jak to działa?</string>
     <string name="exactlocation">Kliknij na flagę, aby zobaczyć dokładną lokalizację</string>
     <string name="registertext">Zarejestruj się w SimplyClime!</string>
+    <string name="humidity">Wilg.</string>
+    <string name="title">Tytuł</string>
+    <string name="chartTitle">Temperatura zewnętrzna i opady deszczu</string>
+    <string name="room">Pokój</string>
+    <string name="settingsroom">Zmień nazwę dodatkowych pomiarów temperatury i wilgotności</string>
+    <string name="ecowitt">Stacja ecowitt</string>
+    <string name="sendas">Dane wysyłaj w jednostkach</string>
+    <string name="showas">Dane wyświetlaj w jednostkach</string>
+    <string name="deleteTitle">Usuwanie stacji</string>
+    <string name="deleteContent">Czy na pewno chcesz usunąć stację</string>
+    <string name="yes">Tak</string>
+    <string name="no">Nie</string>
 </resources>

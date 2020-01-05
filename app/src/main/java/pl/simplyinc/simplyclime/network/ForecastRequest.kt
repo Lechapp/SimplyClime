@@ -1,7 +1,7 @@
 package pl.simplyinc.simplyclime.network
 
 import android.content.Context
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.widget.Toast
 import com.android.volley.Request
 import com.android.volley.Response
@@ -25,7 +25,7 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
 
     val session = SessionPref(context)
 
-    fun getNewestForecast(city:String, forecastRecycler:RecyclerView? = null, onSuccess : (forecast:JSONObject) -> Unit) {
+    fun getNewestForecast(city:String, forecastRecycler: RecyclerView? = null, onSuccess : (forecast:JSONObject) -> Unit) {
         val alloldforecasts = session.getPref("forecasts").split("|")[pos]
         val oldforecast = JSONObject(alloldforecasts)
 
@@ -109,10 +109,8 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
                             tempmin = 999
                             tempmax = 0
 
-                            if(licznik > 5)
-                                nextdays.add(addday)
-                            else
-                                firsttime = 0
+                            nextdays.add(addday)
+
 
                             if(licznikfirstday == 0)
                                 licznikfirstday = licznik
@@ -124,21 +122,25 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
                 }
                 val checkTime = (System.currentTimeMillis()/1000).toInt()
 
-                if(oldforecast.getString("day0").isNotEmpty()) {
+                arrayiconOpenWeather[5] = arrayiconOpenWeather[1] + arrayiconOpenWeather[3] + arrayiconOpenWeather[4]
+                arrayiconOpenWeather[2] = arrayiconOpenWeather[0] + arrayiconOpenWeather[1]
+                iconid = getIcon(arrayiconOpenWeather)
+                //the last one
+                val dayObject = OneDayForecast(tempmin, tempmax, iconid[0], iconid[1])
+                val addday = json.stringify(OneDayForecast.serializer(), dayObject)
+                nextdays.add(addday)
+
+                if(licznik < 6) {
+                    nextdays.dropLast(1)
+                }
+                if(licznikfirstday < 5 && oldforecast.getString("day0").isNotEmpty()) {
                     val day0 = JSONObject(oldforecast.getString("day0"))
                     val timeDay0 = day0.getInt("time")
-
-                    if (licznikfirstday < 6 && timeDay0 != 0 && checkTime - timeDay0 < (10 * 3600)) {
+                    if (timeDay0 != 0 && checkTime - timeDay0 < (10 * 3600)) {
                         nextdays[0] = oldforecast.getString("day0")
                     }
                 }
 
-                arrayiconOpenWeather[5] = arrayiconOpenWeather[1] + arrayiconOpenWeather[3] + arrayiconOpenWeather[4]
-                arrayiconOpenWeather[2] = arrayiconOpenWeather[0] + arrayiconOpenWeather[1]
-                iconid = getIcon(arrayiconOpenWeather)
-                val dayObject = OneDayForecast(tempmin, tempmax, iconid[0], iconid[1])
-                val addday = json.stringify(OneDayForecast.serializer(), dayObject)
-                nextdays.add(addday)
 
                 for(i in nextdays.size .. 5)
                     nextdays.add("")
@@ -161,7 +163,7 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
         VolleySingleton.getInstance(context).addToRequestQueue(request)
     }
 
-    private fun saveNewForecast(newforecast:String, forecastRecycler: RecyclerView?){
+    private fun saveNewForecast(newforecast:String, forecastRecycler: androidx.recyclerview.widget.RecyclerView?){
         val active = session.getPref("forecasts").split("|").toMutableList()
         active[pos] = newforecast
         val allnew = active.joinToString("|") + "|"
@@ -183,6 +185,10 @@ class ForecastRequest(val context: Context, private val pos:Int, val tempunit:St
             allmaxs.add(arrayIcon.indexOf(maxValue))
             arrayIcon[arrayIcon.indexOf(maxValue)] = 0
         }
+
+        //for sure
+        if(allmaxs.size < 2)
+            allmaxs.add(0)
 
         val icon = if(allmaxs.size > 1) ((allmaxs[0] + allmaxs[1] - 0.01)/2.0).roundToInt() else allmaxs[0]
 

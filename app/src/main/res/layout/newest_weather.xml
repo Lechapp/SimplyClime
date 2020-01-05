@@ -57,23 +57,28 @@
                             android:id="@+id/tempimage"
                             android:contentDescription="@string/tempicon"
                     />
+
                     <LinearLayout
-                            android:orientation="vertical"
-                            android:layout_width="60dp"
-                            android:layout_height="wrap_content">
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
                         <TextView
+                                android:id="@+id/tempin"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
                                 android:text="@string/tempin"
                                 android:textColor="@color/blackfont"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:id="@+id/tempin"
-                                android:textSize="12sp"
-                                android:layout_marginTop="5dp"/>
+                                android:textSize="12sp" />
+
                         <TextView
+                                android:id="@+id/tempout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
                                 android:text="@string/tempout"
                                 android:textColor="@color/blackfont"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:id="@+id/tempout"
-                                android:textSize="12sp"/>
+                                android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
                 <LinearLayout
@@ -125,13 +130,18 @@
                         android:contentDescription="@string/insolation"
                         android:layout_height="26dp" android:id="@+id/insolationimg"
                         android:layout_weight="0"/>
+
                 <TextView
-                        android:text="@string/insolation"
-                        android:layout_width="61dp"
-                        android:textColor="@color/blackfont"
+                        android:id="@+id/insolation"
+                        android:layout_width="70dp"
+                        android:paddingTop="1dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="2dp"
-                        android:layout_height="wrap_content" android:id="@+id/insolation" android:layout_weight="0"
-                        android:textSize="12sp"/>
+                        android:layout_weight="0"
+
+                        android:text="@string/insolation"
+                        android:textColor="@color/blackfont"
+                        android:textSize="12sp" />
                 <ImageView
                         android:layout_width="25dp"
                         android:contentDescription="@string/rainfall"
@@ -160,13 +170,16 @@
                         android:layout_height="26dp" android:background="@drawable/wind_b"
                         android:id="@+id/windspeedimg"
                         android:layout_weight="0"/>
+
                 <TextView
-                        android:text="@string/windspeed"
-                        android:layout_width="61dp"
-                        android:textColor="@color/blackfont"
+                        android:id="@+id/windspeed"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="2dp"
-                        android:layout_height="wrap_content" android:id="@+id/windspeed" android:layout_weight="0"
-                        android:textSize="12sp"/>
+                        android:layout_weight="0"
+                        android:text="@string/windspeed"
+                        android:textColor="@color/blackfont"
+                        android:textSize="12sp" />
                 <ImageView
                         android:layout_width="25dp"
                         android:layout_marginStart="10dp"

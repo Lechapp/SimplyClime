@@ -22,7 +22,7 @@ import pl.simplyinc.simplyclime.R
 
 
 
-class OnSwipeTouchListener(private val ctx: Context, private val mChart: CombinedChart, private val swipeIcon:ImageView,
+class onLeftRightTouchListener(private val ctx: Context, private val mChart: CombinedChart, private val swipeIcon:ImageView,
                            offset:Float) : OnTouchListener {
 
     private val gestureDetector: GestureDetector
@@ -41,55 +41,38 @@ class OnSwipeTouchListener(private val ctx: Context, private val mChart: Combine
         }
         gestureDetector = GestureDetector(ctx, GestureListener())
     }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View, event: MotionEvent): Boolean {
-        return gestureDetector.onTouchEvent(event)
+
+            var dx = 0.toFloat()
+
+            when(event.action){
+
+                MotionEvent.ACTION_UP -> {
+                    val x2 = event.x
+                    val y2 = event.y
+                    dx = x2-y2
+                }
+                else -> {
+                    return true
+                }
+            }
+            if(dx > 1){
+                onClickRight()
+            }else {
+                onClickLeft()
+            }
+            return true
     }
 
     private inner class GestureListener : SimpleOnGestureListener() {
 
-        override fun onDown(e: MotionEvent): Boolean {
-            return true
-        }
-
-        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-
-            var result = false
-            try {
-                val diffY = e2.y - e1.y
-                val diffX = e2.x - e1.x
-                if (abs(diffX) > abs(diffY)) {
-                    if (abs(diffX) > SWIPE_THRESHOLD && abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffX > 0) {
-                            onSwipeRight()
-                        } else {
-                            onSwipeLeft()
-                        }
-                        result = true
-                    }
-                } else if (abs(diffY) > SWIPE_THRESHOLD && abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-                    if (diffY > 0) {
-                        onSwipeBottom()
-                    } else {
-                        onSwipeTop()
-                    }
-                    result = true
-                }
-            } catch (exception: Exception) {
-                exception.printStackTrace()
-            }
-
-            return result
-        }
-
-
     }
-    companion object {
-        private const val SWIPE_THRESHOLD = 100
-        private const val SWIPE_VELOCITY_THRESHOLD = 100
-    }
+
     var xstatus = offset
-    fun onSwipeBottom() {
+
+    fun onClickLeft() {
         if(!busy) {
             busy = true
             if (swipetutorial) {
@@ -116,9 +99,7 @@ class OnSwipeTouchListener(private val ctx: Context, private val mChart: Combine
             }, 1000)
         }
     }
-    fun onSwipeRight() {}
-    fun onSwipeLeft() {}
-    fun onSwipeTop() {
+    fun onClickRight() {
         if(!busy) {
             busy = true
             if (swipetutorial) {

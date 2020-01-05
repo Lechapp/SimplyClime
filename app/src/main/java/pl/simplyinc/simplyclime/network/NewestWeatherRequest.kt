@@ -1,19 +1,17 @@
 package pl.simplyinc.simplyclime.network
 
 import android.content.Context
-import android.support.constraint.ConstraintLayout
-import android.support.v4.content.ContextCompat
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.SuperscriptSpan
+import android.util.Log
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
@@ -41,11 +39,12 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
         station = stat
         val searchvalue = station.getString("searchvalue")
 
-        val url = "http://$server/api/weather/$searchvalue?newest=true&gps=${station.getString("gps")}&lat=$lat&long=$lon"
+        val url = "https://$server/weather/$searchvalue?newest=true&gps=${station.getString("gps")}&lat=$lat&long=$lon"
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 
                 val response = JSONObject(res)
+
                 if (!response.getBoolean("error")) {
                     val w = response.getJSONArray("weather").getJSONArray(0)
                     val unixTime = (System.currentTimeMillis() / 1000L).toDouble().roundToInt()
@@ -53,31 +52,34 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
                     val tempimg = tool.getTempImgId(w.getString(0), true)
 
-                    val tempin = tool.roundto(w.getString(1))
-                    val tempout = tool.roundto(w.getString(0))
+                    val tempin = w.getString(1)
+                    val tempout = w.getString(0)
                     val humiout = tool.roundto(w.getString(2))
                     val humiin = tool.roundto(w.getString(3))
                     val insolation = tool.roundto(w.getString(9))
                     val rainfall = tool.roundto(w.getString(5))
                     val pressure = tool.roundto(w.getString(4))
 
+                    //15 - 22 temp1-8
+                    //23 - 30 humidity1-8
                     val newW = WeatherData(tempout,tempin,humiout,humiin, pressure,rainfall,
                         w.getString(6),w.getString(7),w.getString(8), insolation,w.getString(10),
-                        w.getInt(11),unixTime, tempimg)
+                        w.getInt(11),unixTime, tempimg, "", "", w.getString(15),
+                        w.getString(16), w.getString(17), w.getString(18), w.getString(19),
+                        w.getString(20), w.getString(21), w.getString(22),
+                        tool.roundto(w.getString(23)),
+                        tool.roundto(w.getString(24)),
+                        tool.roundto(w.getString(25)),
+                        tool.roundto(w.getString(26)),
+                        tool.roundto(w.getString(27)),
+                        tool.roundto(w.getString(28)),
+                        tool.roundto(w.getString(29)),
+                        tool.roundto(w.getString(30))
+                    )
 
 
                     val newweather = json.stringify(WeatherData.serializer(), newW)
                     saveWeather(newweather)
-
-                        saveNewStation(
-                            response.getString("city"),
-                            response.getInt("sunset"),
-                            response.getInt("sunrise"),
-                            response.getString("country"),
-                            response.getInt("timezone"),
-                            lat,
-                            lon
-                        )
 
                     setWeather(JSONObject(newweather), station, false)
                 }else{
@@ -89,6 +91,8 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
                         val city = v.findViewById<TextView>(R.id.citymain)
                         city.text = station.getString("city")
+                            .toLowerCase(Locale.getDefault())
+                            .capitalize()
 
                         if(station.getBoolean("gps")) {
                             if(station.getString("city") != response.getString("city")) {
@@ -138,9 +142,9 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
                 val main = response.getJSONArray("weather").getJSONObject(0).getString("main")
                 val description = response.getJSONArray("weather").getJSONObject(0).getString("description")
-                val tempout = tool.roundto(w.getString("temp"))
+                val tempout = w.getString("temp")
                 val tempimg = tool.getTempImgId(tempout, true)
-                val humiout = w.getString("humidity")
+                val humiout = tool.roundto(w.getString("humidity"))
                 val pressure = tool.roundto(w.getString("pressure"))
                 val time = response.getInt("dt") + response.getInt("timezone")
 
@@ -258,14 +262,52 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
         val airtxt = v.findViewById<TextView>(R.id.poltxt)
         val air10 = v.findViewById<TextView>(R.id.pol10)
         val air25 = v.findViewById<TextView>(R.id.pol25)
-        val updated = v.findViewById<TextView>(R.id.lastdata)
+        val lastdata = v.findViewById<TextView>(R.id.lastdata)
+        val updated = v.findViewById<TextView>(R.id.updatedAt)
         val batterylvl = v.findViewById<TextView>(R.id.baterrystatustxt)
         val batteryimg = v.findViewById<ImageView>(R.id.batterystatus)
         val allweather = v.findViewById<ConstraintLayout>(R.id.allweather)
         val errorlayout = v.findViewById<ConstraintLayout>(R.id.errorlayout)
         val pollutions = v.findViewById<LinearLayout>(R.id.linearLayout5)
+        val updateClock = v.findViewById<LinearLayout>(R.id.allUpdateClock)
+        val additionalTemp = v.findViewById<HorizontalScrollView>(R.id.additionalTemp)
+        val unitGrid = v.findViewById<TextView>(R.id.unitGrid)
+
+        val title = listOf<TextView>(
+            v.findViewById(R.id.title1),
+            v.findViewById(R.id.title2),
+            v.findViewById(R.id.title3),
+            v.findViewById(R.id.title4),
+            v.findViewById(R.id.title5),
+            v.findViewById(R.id.title6),
+            v.findViewById(R.id.title7),
+            v.findViewById(R.id.title8)
+        )
+        val humi = listOf<TextView>(
+            v.findViewById(R.id.hum1),
+            v.findViewById(R.id.hum2),
+            v.findViewById(R.id.hum3),
+            v.findViewById(R.id.hum4),
+            v.findViewById(R.id.hum5),
+            v.findViewById(R.id.hum6),
+            v.findViewById(R.id.hum7),
+            v.findViewById(R.id.hum8)
+        )
+        val temp = listOf<TextView>(
+            v.findViewById(R.id.temp1),
+            v.findViewById(R.id.temp2),
+            v.findViewById(R.id.temp3),
+            v.findViewById(R.id.temp4),
+            v.findViewById(R.id.temp5),
+            v.findViewById(R.id.temp6),
+            v.findViewById(R.id.temp7),
+            v.findViewById(R.id.temp8)
+            )
+
 
         city.text = s.getString("city")
+            .toLowerCase(Locale.getDefault())
+            .capitalize()
 
         if(s.getBoolean("gps"))
             city.setCompoundDrawablesWithIntrinsicBounds(0,0,R.drawable.ic_gps_fixed_white_24dp,0)
@@ -278,23 +320,35 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
                 errorlayout.visibility = View.VISIBLE
                 return false
             }else{
-                val unixTime = System.currentTimeMillis()
-                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                val lastdat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
-                lastdat.timeZone = TimeZone.getTimeZone("GMT")
-                val update = Date(unixTime)
-                val datafrom = Date(w.getLong("time") * 1000L)
-                val text =
-                    c.getString(R.string.lastupdate) + " " + lastdat.format(datafrom) + ". " + c.getString(
-                        R.string.updated
-                    ) + " " + sdf.format(update)
-
-                updated.text = text
-                updated.visibility = View.VISIBLE
                 allweather.visibility = View.VISIBLE
                 errorlayout.visibility = View.GONE
             }
         }
+
+        //clock
+        if(s.getBoolean("privstation")) {
+            val unixTime = System.currentTimeMillis()
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val lastdat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
+            lastdat.timeZone = TimeZone.getTimeZone("GMT")
+            val update = Date(unixTime)
+            val datafrom = Date(w.getLong("time") * 1000L)
+            val lastDataText =
+                c.getString(R.string.lastupdate) + " " + lastdat.format(datafrom)
+            val updatedText = c.getString(
+                R.string.updated
+            ) + " " + sdf.format(update)
+
+            lastdata.text = lastDataText
+            updated.text = updatedText
+            updated.visibility = View.VISIBLE
+            lastdata.visibility = View.VISIBLE
+            updateClock.visibility = View.VISIBLE
+        }else{
+            updateClock.visibility = View.INVISIBLE
+        }
+
+
         //temp
             if(w.getString("tempin") != "null") {
                 setanimListener(tempin)
@@ -302,7 +356,6 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
                 val converttemp = tool.kelvintoTempUnit(w.getString("tempin"), s.getString("tempunit"))
                 val temptext = c.getString(R.string.`in`) + " " + converttemp + s.getString("tempunit")
                 tempin.text = temptext
-
             }else tempin.visibility = View.INVISIBLE
 
             if(w.getString("tempout") != "null"){
@@ -339,7 +392,7 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
         //pressure
         if(w.getString("pressure") != "null") {
-            val presstext = w.getString("pressure") + "HPa"
+            val presstext = w.getString("pressure") + "hPa"
             pressure.text = presstext
         } else pressall.visibility = View.GONE
 
@@ -352,13 +405,30 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
         //insolation
         if(w.getString("insolation") != "null") {
-            val insoltext = w.getString("insolation") + "%"
-            ins.text = insoltext
+            ins.text = if(s.has("ecowitt") && s.getBoolean("ecowitt")){
+                val pom = w.getString("insolation") + " W/m2"
+                val superscriptSpan = SuperscriptSpan()
+                val builder = SpannableStringBuilder(pom)
+                builder.setSpan(
+                    superscriptSpan,
+                    pom.length-1,
+                    pom.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                builder
+            }else{
+                w.getString("insolation") + "%"
+            }
         }else insall.visibility = View.GONE
 
         //rainfall
         if(w.getString("rainfall") != "null") {
-            val raintext = w.getString("rainfall") + "%"
+            val unit = if(s.has("ecowitt") && s.getBoolean("ecowitt")){
+                " mm"
+            }else{
+                "%"
+            }
+            val raintext = w.getString("rainfall") + unit
             rain.text = raintext
         }else rainall.visibility = View.GONE
 
@@ -433,6 +503,7 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
                 s.getInt("sunrise"),
                 s.getInt("sunset"),
                 s.getInt("timezone"),
+                s.getBoolean("ecowitt"),
                 true)
         }else{
             tool.weatherIconOpenWeather(
@@ -447,11 +518,41 @@ class NewestWeatherRequest(val c:Context,private val v:View, private val positio
 
         weatherimg.background = ContextCompat.getDrawable(c, weatherimage)
 
+        var anyone = false
 
+        for(i in 1..8){
+            if((w.getString("humidity${i}") != "null" && w.getString("humidity${i}") != "")
+                || (w.getString("temp${i}") != "null") && w.getString("temp${i}") != ""){
+
+                unitGrid.text = s.getString("tempunit")
+                anyone = true
+                if(s.getString("title${i}") != "") {
+                    title[i-1].text = s.getString("title${i}")
+
+                }else title[i-1].text = "${c.getString(R.string.room)}${i}"
+
+                if(w.getString("humidity${i}") != "null") {
+                    humi[i-1].text = w.getString("humidity${i}")
+
+                }else humi[i-1].visibility = View.GONE
+
+                if(w.getString("temp${i}") != "null"){
+                    temp[i-1].text = tool.kelvintoTempUnit(w.getString("temp${i}"), s.getString("tempunit"))
+                }else temp[i-1].visibility = View.GONE
+
+            }else{
+                temp[i-1].visibility = View.GONE
+                humi[i-1].visibility = View.GONE
+                title[i-1].visibility = View.GONE
+            }
+        }
+
+        if(anyone){
+            additionalTemp.visibility = View.VISIBLE
+        }
         val items = v.findViewById<LinearLayout>(R.id.linearLayout)
         setanimListener(null, items)
         setanimListener(null, null, weatherimg)
-
 
         return true
     }

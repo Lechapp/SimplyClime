@@ -2,9 +2,9 @@ package pl.simplyinc.simplyclime.adapters
 
 import kotlinx.android.synthetic.main.street_row.view.*
 import android.content.Context
-import android.support.constraint.ConstraintLayout
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.RecyclerView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,9 +12,9 @@ import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.elements.SessionPref
 import pl.simplyinc.simplyclime.widget.NewestWeatherConfigureActivity
 
-class WidgetChooseAdapter(val context:Context, private val title:List<String>): RecyclerView.Adapter<ViewHolder>() {
+class WidgetChooseAdapter(val context:Context, private val title:List<String>): androidx.recyclerview.widget.RecyclerView.Adapter<ViewHolder>() {
 
-    private lateinit var lastchoice:ConstraintLayout
+    private lateinit var lastchoice: ConstraintLayout
     override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(context)
         return ViewHolder(layoutInflater.inflate(R.layout.street_row, parent, false))

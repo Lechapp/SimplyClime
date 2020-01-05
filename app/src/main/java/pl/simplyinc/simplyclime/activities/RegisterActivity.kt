@@ -1,7 +1,7 @@
 package pl.simplyinc.simplyclime.activities
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -84,7 +84,7 @@ class RegisterActivity : AppCompatActivity() {
         progressreg.visibility = View.VISIBLE
         register.visibility = View.GONE
 
-        val url = "http://$server/api/user/add"
+        val url = "https://$server/user/add"
 
         val request = object:StringRequest(Method.POST, url, Response.Listener{ res ->
 
@@ -128,7 +128,7 @@ class RegisterActivity : AppCompatActivity() {
         progressreg.visibility = View.VISIBLE
         register.visibility = View.GONE
 
-        val url = "http://$server/api/user/add/check"
+        val url = "https://$server/user/add/check"
 
         val request = object:StringRequest(Method.POST, url, Response.Listener{ res ->
 

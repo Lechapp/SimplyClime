@@ -1,9 +1,7 @@
 package pl.simplyinc.simplyclime.network
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -14,14 +12,13 @@ import com.android.volley.toolbox.StringRequest
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.R
 import pl.simplyinc.simplyclime.activities.MainActivity
-import pl.simplyinc.simplyclime.activities.SettingsActivity
 import pl.simplyinc.simplyclime.activities.server
 import pl.simplyinc.simplyclime.elements.SessionPref
 
 class DeleteWeaterStation {
-    fun deleteStation(context:Context, stationid:String, position:Int, progressDelete:ProgressBar, delete:ImageView){
+    fun deleteStation(context:Context, stationid:String, position:Int, progressDelete:ProgressBar, delete:ImageView, apikey:String){
 
-        val url = "http://$server/api/station/delete/$stationid"
+        val url = "https://$server/station/delete/$stationid/$apikey"
         progressDelete.visibility = View.VISIBLE
         delete.visibility = View.GONE
 

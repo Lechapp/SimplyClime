@@ -2,8 +2,8 @@ package pl.simplyinc.simplyclime.adapters
 
 import android.content.Context
 import android.content.Intent
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,16 +20,29 @@ import pl.simplyinc.simplyclime.elements.StationsData
 import pl.simplyinc.simplyclime.elements.WeatherData
 import java.util.*
 import android.net.Uri
+import android.util.Log
+import java.lang.Exception
 
 
-
-
+@Suppress("IMPLICIT_CAST_TO_ANY")
 class SearchWeatherAdapter(private val cities: MutableList<String>, private val countries: MutableList<String>, val stations: MutableList<String>,
                            val timezone:MutableList<Int>, val context: Context, private val liststations:JSONObject?,
-                           private val coord:MutableList<String>): RecyclerView.Adapter<ViewHolder>() {
+                           private val coord:MutableList<String>, private val ecowitt:MutableList<Boolean>): RecyclerView.Adapter<ViewHolder>() {
 
     private val session = SessionPref(context)
 
+    private fun String.normalize(): String {
+
+        val original = arrayOf("Ą", "ą", "Ć", "ć", "Ę", "ę", "Ł", "ł", "Ń", "ń", "Ó", "ó", "Ś", "ś", "Ź", "ź", "Ż", "ż")
+        val normalized = arrayOf("A", "a", "C", "c", "E", "e", "L", "l", "N", "n", "O", "o", "S", "s", "Z", "z", "Z", "z")
+        return this.map { char ->
+
+            val index = original.indexOf(char.toString())
+
+            if (index >= 0) normalized[index] else char
+
+        }.joinToString("")
+    }
     override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(context)
         return ViewHolder(layoutInflater.inflate(R.layout.search_row, parent, false))
@@ -85,7 +98,10 @@ class SearchWeatherAdapter(private val cities: MutableList<String>, private val 
                     cities[position],
                     "",
                     false,
-                    privatestation
+                    privatestation,
+                    "°C",
+                    "km/h", 0, 0, 0, 0.0, 0.0, "", "",
+                    ecowitt[position]
                 )
 
                 val selectedcity = json.stringify(StationsData.serializer(), station) + "|"
@@ -106,7 +122,7 @@ class SearchWeatherAdapter(private val cities: MutableList<String>, private val 
                     session.setPref("forecasts", activeforecasts + addedforecast)
 
                     val intent = Intent(context, MainActivity::class.java)
-                    intent.putExtra("setweather", activeweather.split("|").size)
+                    intent.putExtra("setweather", activeweather.split("|").size-1)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 }
@@ -125,11 +141,22 @@ class SearchWeatherAdapter(private val cities: MutableList<String>, private val 
                     }
                     arrowchange = !arrowchange
 
-                    recyclercity.adapter = SearchStreetAdapter(
-                        context,
-                        liststations!!.getJSONArray(cities[position]),
-                        cities[position]
-                    )
+                    cities[position] = cities[position].normalize().toLowerCase(Locale.getDefault())
+
+                    var error = false
+                    try{
+                        liststations!!.getJSONArray(cities[position])
+                    }catch (e:Exception){
+                        error = true
+                    }
+
+                    if(!error) {
+                        recyclercity.adapter = SearchStreetAdapter(
+                            context,
+                            liststations!!.getJSONArray(cities[position]),
+                            cities[position]
+                        )
+                    }
                 }
             }else{
                 searchtext.visibility = View.GONE

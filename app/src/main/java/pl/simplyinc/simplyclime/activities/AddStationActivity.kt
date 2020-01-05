@@ -1,7 +1,7 @@
 package pl.simplyinc.simplyclime.activities
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.RadioButton
 import com.android.volley.Response
@@ -13,6 +13,7 @@ import pl.simplyinc.simplyclime.network.VolleySingleton
 import android.location.Geocoder
 import android.view.MenuItem
 import android.view.View
+import android.widget.Switch
 import android.widget.Toast
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -38,6 +39,23 @@ class AddStationActivity : AppCompatActivity() {
 
             if(checkData()){
                addStation()
+            }
+        }
+
+        ecowitt.setOnCheckedChangeListener { _, isChecked ->
+
+            if(isChecked) {
+                F.isChecked = true
+                mph.isChecked = true
+                kmh.isEnabled = false
+                ms.isEnabled = false
+                C.isEnabled = false
+                K.isEnabled = false
+            }else{
+                kmh.isEnabled = true
+                ms.isEnabled = true
+                C.isEnabled = true
+                K.isEnabled = true
             }
         }
     }
@@ -72,6 +90,8 @@ class AddStationActivity : AppCompatActivity() {
         return ok
     }
 
+
+
     private fun addStation(){
         progressaddStation.visibility = View.VISIBLE
         addbutton.visibility = View.GONE
@@ -85,6 +105,8 @@ class AddStationActivity : AppCompatActivity() {
         val wind = findViewById<RadioButton>(windunit.checkedRadioButtonId).text.toString()
         var latitude = 0.0
         var longitude = 0.0
+        val ecowittSwitch = findViewById<Switch>(R.id.ecowitt).isChecked
+        val ecowitt = if(ecowittSwitch) 1 else 0
 
        try {
            val geocoder = Geocoder(this, Locale.getDefault())
@@ -97,7 +119,7 @@ class AddStationActivity : AppCompatActivity() {
        }catch (e:Exception){
 
        }
-        val url = "http://$server/api/weather/station/add"
+        val url = "https://$server/weather/station/add"
 
         val request = object: StringRequest(Method.POST, url, Response.Listener{ res ->
 
@@ -105,9 +127,12 @@ class AddStationActivity : AppCompatActivity() {
 
                 if(!response.getBoolean("error")){
                     val json = Json(JsonConfiguration.Stable)
-
+                    val eco = if(ecowitt == 1) true else false
                     val station = StationsData("mystation", city, response.getInt("timezone"),
-                        response.getString("stationID"),response.getString("name"), response.getString("apikey"))
+                        response.getString("stationID"), response.getString("name"), response.getString("apikey"),
+                        false, true, "°C", "km/h", 0,0,0,0.0,0.0,
+                        temp, wind, eco)
+
                     val addedstation = json.stringify(StationsData.serializer(), station) + "|"
 
                     val weather = WeatherData()
@@ -125,7 +150,7 @@ class AddStationActivity : AppCompatActivity() {
                     session.setPref("forecasts",activeforecast+addedforecast)
 
                     val intent = Intent(applicationContext, MainActivity::class.java)
-                    intent.putExtra("setweather", activeweather.split("|").size)
+                    intent.putExtra("setweather", activeweather.split("|").size-1)
                     startActivity(intent)
                 }else{
                     Toast.makeText(this,response.getString("message"), Toast.LENGTH_SHORT).show()
@@ -150,6 +175,7 @@ class AddStationActivity : AppCompatActivity() {
                 params["windunit"] = wind
                 params["longitude"] = longitude.toString()
                 params["latitude"] = latitude.toString()
+                params["ecowitt"] = ecowitt.toString()
                 //params["lang"] = Locale.getDefault().language
                 return params
             }

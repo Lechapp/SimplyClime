@@ -14,7 +14,7 @@ class GetRefreshStationTime(val session:SessionPref, val station:String) {
 
     fun getNewestRefreshTime(context: Context, stationid:String) {
 
-        val url = "http://$server/api/station/refreshtime/$stationid"
+        val url = "http://$server/station/refreshtime/$stationid"
 
         val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 

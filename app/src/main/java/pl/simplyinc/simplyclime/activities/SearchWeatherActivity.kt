@@ -9,11 +9,11 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.TransitionDrawable
 import android.location.Location
 import android.os.Build
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
@@ -28,13 +28,13 @@ import kotlinx.android.synthetic.main.activity_search_weather.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import pl.simplyinc.simplyclime.R
-import pl.simplyinc.simplyclime.adapters.SearchWeatherAdapter
 import pl.simplyinc.simplyclime.elements.*
 import pl.simplyinc.simplyclime.network.GetCityFromGPSOpenWeather
 import pl.simplyinc.simplyclime.network.GetCityFromGPSRequest
 import pl.simplyinc.simplyclime.network.SearchCity
 
 
+@Suppress("IMPLICIT_CAST_TO_ANY")
 class SearchWeatherActivity : AppCompatActivity() {
 
     private var permission = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -65,7 +65,7 @@ class SearchWeatherActivity : AppCompatActivity() {
 
         search.setOnKeyListener(View.OnKeyListener { _, keyCode, event ->
 
-            val city = search.text.trim().toString()
+            val city = search.text.trim().toString().normalize()
 
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 countcallfun = 0
@@ -84,7 +84,7 @@ class SearchWeatherActivity : AppCompatActivity() {
 
         search.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
-                val city = search.text.trim().toString()
+                val city = search.text.trim().toString().normalize()
 
                 if(city.length > 3) {
                     countcallback++
@@ -279,5 +279,23 @@ class SearchWeatherActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+    }
+
+    private fun String.normalize(): String {
+
+        val original = arrayOf("Ą", "ą", "Ć", "ć", "Ę", "ę", "Ł", "ł", "Ń", "ń", "Ó", "ó", "Ś", "ś", "Ź", "ź", "Ż", "ż")
+
+        val normalized = arrayOf("A", "a", "C", "c", "E", "e", "L", "l", "N", "n", "O", "o", "S", "s", "Z", "z", "Z", "z")
+
+
+
+        return this.map { char ->
+
+            val index = original.indexOf(char.toString())
+
+            if (index >= 0) normalized[index] else char
+
+        }.joinToString("")
+
     }
 }

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "287081929640",
+    "firebase_url": "https://simplyclime-1561917916047.firebaseio.com",
+    "project_id": "simplyclime-1561917916047",
+    "storage_bucket": "simplyclime-1561917916047.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:287081929640:android:06319eb2dcc0e249cc5b9d",
+        "android_client_info": {
+          "package_name": "pl.simplyinc.simplyclime"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "287081929640-f3loosp4pmeh282hnt8v047oi0fp3h1o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzJWIWTD4OXsn30TUhmeE37h4TudxLSUE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "287081929640-f3loosp4pmeh282hnt8v047oi0fp3h1o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

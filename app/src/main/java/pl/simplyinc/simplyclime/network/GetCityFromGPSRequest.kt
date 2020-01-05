@@ -16,7 +16,7 @@ class GetCityFromGPSRequest {
 
         fun getCity(act: Activity, loc: Location) {
 
-            val url = "http://$server/api/station/search/${loc.latitude}/${loc.longitude}"
+            val url = "https://$server/station/search/${loc.latitude}/${loc.longitude}"
             val request = StringRequest(Request.Method.GET, url, Response.Listener { res ->
 
                     val response = JSONObject(res)

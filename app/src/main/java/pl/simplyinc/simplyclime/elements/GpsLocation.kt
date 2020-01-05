@@ -9,7 +9,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v4.content.ContextCompat.startActivity
+import androidx.core.content.ContextCompat.startActivity
 import android.view.View
 import org.json.JSONObject
 import pl.simplyinc.simplyclime.activities.MainActivity
@@ -158,11 +158,17 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                             update.setWeather(JSONObject(weatherOld), stationsData, false)
 
                             if(stationsData.getBoolean("privstation")) {
+                                val ecowitt = if(stationsData.has("ecowitt")){
+                                    stationsData.getBoolean("ecowitt")
+                                }else {
+                                    false
+                                }
                                 chartRequest?.getChartData(
                                     stationsData.getString("searchvalue"),
                                     stationsData.getString("tempunit"),
                                     loc.latitude.toString(),
-                                    loc.longitude.toString()
+                                    loc.longitude.toString(),
+                                    ecowitt
                                 )
                             }else{
                                     chartRequest?.getChartDataOpenWeather(
@@ -191,12 +197,16 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
             rootview!!,
             position
         )
-        val main = act as MainActivity
+        //val main = act as MainActivity
 
         if(privatestation){
-
+            val ecowitt = if(stationsData!!.has("ecowitt")){
+                stationsData.getBoolean("ecowitt")
+            }else {
+                false
+            }
             getWeather.getNewestWeather(
-                stationsData!!,
+                stationsData,
                 loc.latitude.toString(),
                 loc.longitude.toString()
             ) {
@@ -204,9 +214,10 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                     it,
                     stationsData.getString("tempunit"),
                     loc.latitude.toString(),
-                    loc.longitude.toString()
+                    loc.longitude.toString(),
+                    ecowitt
                 )
-                main.setTitleBar()
+                //main.setTitleBar()
             }
 
         }else {
@@ -225,7 +236,7 @@ class GpsLocation(private val act: Activity? = null, private val c:Context, priv
                     frag?.setForecastData(data)
                 }
 
-                main.setTitleBar()
+                //main.setTitleBar()
             }
         }
     }

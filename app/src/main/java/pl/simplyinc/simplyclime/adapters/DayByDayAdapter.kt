@@ -225,7 +225,6 @@ class DayByDayAdapter(val context:Context, val weather:MutableList<JSONArray>, v
                 val colorid = tool.pm25(w.getString(8))
                 airpol25.background = ContextCompat.getDrawable(context,colorid)
                 val indexgorny = tool.roundto(w.getString(8)) + " " + context.getString(R.string.pollutionuit)
-                Log.d("pm25test", colorid.toString())
 
                 val superscriptSpan = SuperscriptSpan()
                 val builder = SpannableStringBuilder(indexgorny)
